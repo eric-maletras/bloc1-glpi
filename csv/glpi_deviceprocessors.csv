@@ -1,0 +1,21 @@
+id, designation, frequence , manufacturers_id, frequency_default, nbcores_default, nbthreads_default
+1,Intel(R) Pentium(R) D CPU 3.00GHz,3000,7,3000,2,2
+2,Intel Corporation Intel(R) Pentium(R) D CPU 3.00GHz,3000,7,3000,2,2
+3,Intel(R) Pentium(R) D CPU 2.80GHz,2800,7,2800,2,2
+4,Intel(R) Core(TM) i5-2400 CPU @ 3.10GHz,3100,7,3100,4,4
+5,Intel Corporation Pentium III 0.18 µm) With 1 Or 2 MB On-Die L2 Cache,1000,7,1000,1,1
+6,Intel(R) Pentium(R) CPU G850 @ 2.90GHz,2900,7,2900,1,1
+7,AMD Athlon(tm) II X2 220 Processor, 2800,6,2800,2,2
+8,AMD Athlon(tm) Dual Core Processor 5200B,2700,6,2700,2,2
+9,AMD Athlon(tm) 64 X2 Dual Core Processor 4400+,2200,6,2600,2,2
+10,AMD Athlon(tm) II X2 B22 Processor,2800,6,2800,2,2
+11,Advanced Micro Devices AMD Athlon(tm) II X2 B22 Processor,2800,6,2800,2,2
+12,Intel(R) Core(TM)2 Duo CPU E4600  @ 2.40GHz,2400,7,2400,2,2
+13,Intel(R) Pentium(R) CPU G2020 @ 2.90GHz,2900,7,2900,2,2
+14,Intel(R) Celeron(R) CPU G1610 @ 2.60GHz,2600,7,2600,2,2
+15,AMD Athlon(tm) II X4 635 Processor,2900,6,2900,4,4
+16,Advanced Micro Devices AMD Athlon(tm) II X4 635 Processor,2900,6,2900,4,4
+17,Intel(R) Core(TM) i3-3220 CPU @ 3.30GHz,3300,7,3300,2,4
+18,AMD Athlon(tm) 64 X2 Dual Core Processor 3800+, 2000,6,2000,2,2
+19,Dual-Core AMD Opteron(tm) Processor 2210,1800,6,1800,2,2
+20,Dual-Core AMD Opteron(tm) Processor 2216,2400,6,1800,2,2
