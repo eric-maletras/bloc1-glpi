@@ -1,4 +1,5 @@
 id, items_id, itemtype, deviceharddrives_id, capacity
+1,2,Computer, 1, 238472
 2,4,Computer, 1, 238472
 3,5,Computer, 1, 238472
 4,6,Computer, 1, 238472
