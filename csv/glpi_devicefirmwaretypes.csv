@@ -1,0 +1,4 @@
+id, name, comment
+1, 'BIOS',
+2, 'UEFI',
+3, 'Firmware', 
