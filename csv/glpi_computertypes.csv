@@ -1,0 +1,6 @@
+ID, name, date_mod, date_creation
+1, Autres, now(), now()), 
+2, AT/AT COMPATIBLE, now(), now()), 
+3, Desktop, now(), now()), 
+4,Low Profile Desktop, now(), now()), 
+5,Mini Tower, now(), now()); 
