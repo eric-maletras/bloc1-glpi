@@ -1,349 +1,349 @@
 id, items_id,itemtype,deviceprocessors_id,frequency,nbcores,nbthreads
-658 ,computer ,1,3000 ,2,2
-663 ,computer ,1,3000 ,2,2
-652 ,computer ,2,3000 ,2,2
-463 ,computer ,1,3000 ,2,2
-258 ,computer ,3,2800 ,2,2
-125 ,computer ,4,3100 ,4,4
-77  ,computer ,4,3100 ,4,4
-32  ,computer ,4,3100 ,4,4
-35  ,computer ,4,3100 ,4,4
-167 ,computer ,4,3100 ,4,4
-460 ,computer ,4,3100 ,4,4
-461 ,computer ,4,3100 ,4,4
-428 ,computer ,4,3100 ,4,4
-42  ,computer ,4,3100 ,4,4
-37  ,computer ,4,3100 ,4,4
-44  ,computer ,4,3100 ,4,4
-38  ,computer ,4,3100 ,4,4
-40  ,computer ,4,3100 ,4,4
-39  ,computer ,4,3100 ,4,4
-971 ,computer ,4,3100 ,4,4
-973 ,computer ,5,1000 ,1,1
-980 ,computer ,6,2900 ,1,1
-995 ,computer ,6,2900 ,1,1
-20  ,computer ,6,2900 ,1,1
-8,computer ,6,2900 ,1,1
-2,computer ,6,2900 ,1,1
-6,computer ,6,2900 ,1,1
-17  ,computer ,6,2900 ,1,1
-4,computer ,6,2900 ,1,1
-7,computer ,6,2900 ,1,1
-5,computer ,6,2900 ,1,1
-10  ,computer ,6,2900 ,1,1
-12  ,computer ,6,2900 ,1,1
-391 ,computer ,6,2900 ,1,1
-11  ,computer ,6,2900 ,1,1
-9,computer ,6,2900 ,1,1
-91  ,computer ,3,2800 ,2,2
-500 ,computer ,7,2800 ,2,2
-398 ,computer ,7,2800 ,2,2
-379 ,computer ,7,2800 ,2,2
-403 ,computer ,7,2800 ,2,2
-384 ,computer ,7,2800 ,2,2
-402 ,computer ,7,2800 ,2,2
-400 ,computer ,7,2800 ,2,2
-387 ,computer ,7,2800 ,2,2
-401 ,computer ,7,2800 ,2,2
-202 ,computer ,7,2800 ,2,2
-389 ,computer ,7,2800 ,2,2
-404 ,computer ,7,2800 ,2,2
-386 ,computer ,7,2800 ,2,2
-385 ,computer ,7,2800 ,2,2
-399 ,computer ,7,2800 ,2,2
-961 ,computer ,7,2800 ,2,2
-102 ,computer ,7,2800 ,2,2
-127 ,computer ,8,2700 ,2,2
-180 ,computer ,8,2700 ,2,2
-332 ,computer ,8,2700 ,2,2
-176 ,computer ,8,2700 ,2,2
-173 ,computer ,8,2700 ,2,2
-119 ,computer ,8,2700 ,2,2
-190 ,computer ,8,2700 ,2,2
-195 ,computer ,8,2700 ,2,2
-178 ,computer ,8,2700 ,2,2
-246 ,computer ,8,2700 ,2,2
-249 ,computer ,8,2700 ,2,2
-303 ,computer ,8,2700 ,2,2
-254 ,computer ,8,2700 ,2,2
-316 ,computer ,8,2700 ,2,2
-116 ,computer ,8,2700 ,2,2
-186 ,computer ,8,2700 ,2,2
-208 ,computer ,8,2700 ,2,2
-154 ,computer ,8,2700 ,2,2
-64  ,computer ,8,2700 ,2,2
-114 ,computer ,8,2700 ,2,2
-115 ,computer ,8,2700 ,2,2
-54  ,computer ,8,2700 ,2,2
-248 ,computer ,8,2700 ,2,2
-43  ,computer ,8,2700 ,2,2
-18  ,computer ,8,2700 ,2,2
-113 ,computer ,8,2700 ,2,2
-266 ,computer ,8,2700 ,2,2
-112 ,computer ,8,2700 ,2,2
-262 ,computer ,8,2700 ,2,2
-163 ,computer ,8,2700 ,2,2
-46  ,computer ,8,2700 ,2,2
-265 ,computer ,8,2700 ,2,2
-74  ,computer ,8,2700 ,2,2
-47  ,computer ,8,2700 ,2,2
-79  ,computer ,8,2700 ,2,2
-94  ,computer ,9,2600 ,2,2
-60  ,computer ,9,2600 ,2,2
-26  ,computer ,9,2600 ,2,2
-31  ,computer ,9,2600 ,2,2
-71  ,computer ,9,2600 ,2,2
-29  ,computer ,9,2600 ,2,2
-67  ,computer ,9,2600 ,2,2
-73  ,computer ,9,2600 ,2,2
-19  ,computer ,9,2600 ,2,2
-52  ,computer ,9,2600 ,2,2
-24  ,computer ,9,2600 ,2,2
-25  ,computer ,9,2600 ,2,2
-363 ,computer ,1,3000 ,2,2
-110 ,computer ,9,2600 ,2,2
-53  ,computer ,9,2600 ,2,2
-160 ,computer ,9,2600 ,2,2
-631 ,computer ,3,2800 ,2,2
-192 ,computer ,1,3000 ,2,2
-642 ,computer ,1,3000 ,2,2
-215 ,computer ,3,2800 ,2,2
-211 ,computer ,3,2800 ,2,2
-187 ,computer ,1,3000 ,2,2
-397 ,computer ,1,3000 ,2,2
-143 ,computer ,1,3000 ,2,2
-314 ,computer ,1,3000 ,2,2
-101 ,computer ,1,3000 ,2,2
-326 ,computer ,1,3000 ,2,2
-319 ,computer ,1,3000 ,2,2
-308 ,computer ,1,3000 ,2,2
-325 ,computer ,1,3000 ,2,2
-107 ,computer ,1,3000 ,2,2
-322 ,computer ,8,2700 ,2,2
-100 ,computer ,10  ,2800 ,2,2
-134 ,computer ,10  ,2800 ,2,2
-151 ,computer ,10  ,2800 ,2,2
-122 ,computer ,10  ,2800 ,2,2
-141 ,computer ,10  ,2800 ,2,2
-155 ,computer ,10  ,2800 ,2,2
-175 ,computer ,10  ,2800 ,2,2
-204 ,computer ,10  ,2800 ,2,2
-177 ,computer ,10  ,2800 ,2,2
-214 ,computer ,10  ,2800 ,2,2
-268 ,computer ,10  ,2800 ,2,2
-263 ,computer ,10  ,2800 ,2,2
-168 ,computer ,10  ,2800 ,2,2
-264 ,computer ,10  ,2800 ,2,2
-148 ,computer ,10  ,2800 ,2,2
-129 ,computer ,10  ,2800 ,2,2
-121 ,computer ,10  ,2800 ,2,2
-166 ,computer ,11  ,2800 ,2,2
-105 ,computer ,10  ,2800 ,2,2
-123 ,computer ,10  ,2800 ,2,2
-242 ,computer ,10  ,2800 ,2,2
-164 ,computer ,10  ,2800 ,2,2
-157 ,computer ,10  ,2800 ,2,2
-153 ,computer ,10  ,2800 ,2,2
-224 ,computer ,10  ,2800 ,2,2
-171 ,computer ,10  ,2800 ,2,2
-169 ,computer ,10  ,2800 ,2,2
-247 ,computer ,10  ,2800 ,2,2
-131 ,computer ,10  ,2800 ,2,2
-218 ,computer ,10  ,2800 ,2,2
-158 ,computer ,10  ,2800 ,2,2
-142 ,computer ,10  ,2800 ,2,2
-162 ,computer ,10  ,2800 ,2,2
-243 ,computer ,10  ,2800 ,2,2
-244 ,computer ,10  ,2800 ,2,2
-165 ,computer ,10  ,2800 ,2,2
-130 ,computer ,10  ,2800 ,2,2
-126 ,computer ,10  ,2800 ,2,2
-106 ,computer ,10  ,2800 ,2,2
-146 ,computer ,11  ,2800 ,2,2
-145 ,computer ,10  ,2800 ,2,2
-144 ,computer ,11  ,2800 ,2,2
-156 ,computer ,10  ,2800 ,2,2
-128 ,computer ,10  ,2800 ,2,2
-120 ,computer ,10  ,2800 ,2,2
-132 ,computer ,10  ,2800 ,2,2
-288 ,computer ,10  ,2800 ,2,2
-104 ,computer ,10  ,2800 ,2,2
-124 ,computer ,10  ,2800 ,2,2
-133 ,computer ,10  ,2800 ,2,2
-159 ,computer ,10  ,2800 ,2,2
-103 ,computer ,10  ,2800 ,2,2
-1070 ,computer ,6,2900 ,1,1
-1068 ,computer ,6,2900 ,1,1
-1076 ,computer ,6,2900 ,1,1
-1083 ,computer ,6,2900 ,1,1
-1087 ,computer ,6,2900 ,1,1
-1067 ,computer ,6,2900 ,1,1
-1077 ,computer ,6,2900 ,1,1
-1074 ,computer ,6,2900 ,1,1
-193 ,computer ,1,3000 ,2,2
-108 ,computer ,1,3000 ,2,2
-951 ,computer ,1,3000 ,2,2
-1081 ,computer ,6,2900 ,1,1
-1072 ,computer ,6,2900 ,1,1
-1073 ,computer ,6,2900 ,1,1
-1078 ,computer ,6,2900 ,1,1
-1075 ,computer ,6,2900 ,1,1
-1080 ,computer ,6,2900 ,1,1
-1079 ,computer ,6,2900 ,1,1
-1071 ,computer ,6,2900 ,1,1
-884 ,computer ,1,3000 ,2,2
-426 ,computer ,8,2700 ,2,2
-450 ,computer ,8,2700 ,2,2
-361 ,computer ,8,2700 ,2,2
-359 ,computer ,8,2700 ,2,2
-423 ,computer ,8,2700 ,2,2
-360 ,computer ,8,2700 ,2,2
-998 ,computer ,8,2700 ,2,2
-455 ,computer ,8,2700 ,2,2
-1091 ,computer ,6,2900 ,1,1
-1090 ,computer ,6,2900 ,1,1
-1038 ,computer ,6,2900 ,1,1
-1037 ,computer ,6,2900 ,1,1
-1089 ,computer ,6,2900 ,1,1
-1085 ,computer ,6,2900 ,1,1
-1032 ,computer ,6,2900 ,1,1
-1035 ,computer ,6,2900 ,1,1
-1028 ,computer ,6,2900 ,1,1
-1036 ,computer ,6,2900 ,1,1
-1033 ,computer ,6,2900 ,1,1
-1030 ,computer ,6,2900 ,1,1
-1034 ,computer ,6,2900 ,1,1
-1031 ,computer ,6,2900 ,1,1
-348 ,computer ,13  ,2900 ,2,2
-355 ,computer ,13  ,2900 ,2,2
-356 ,computer ,13  ,2900 ,2,2
-354 ,computer ,13  ,2900 ,2,2
-353 ,computer ,13  ,2900 ,2,2
-357 ,computer ,13  ,2900 ,2,2
-349 ,computer ,13  ,2900 ,2,2
-462 ,computer ,13  ,2900 ,2,2
-350 ,computer ,13  ,2900 ,2,2
-655 ,computer ,1,3000 ,2,2
-311 ,computer ,3,2800 ,2,2
-135 ,computer ,6,2900 ,1,1
-137 ,computer ,6,2900 ,1,1
-139 ,computer ,6,2900 ,1,1
-138 ,computer ,6,2900 ,1,1
-98  ,computer ,6,2900 ,1,1
-296 ,computer ,1,3000 ,2,2
-297 ,computer ,8,2700 ,2,2
-1088 ,computer ,1,3000 ,2,2
-302 ,computer ,8,2700 ,2,2
-286 ,computer ,8,2700 ,2,2
-95  ,computer ,8,2700 ,2,2
-213 ,computer ,1,3000 ,2,2
-255 ,computer ,2,3000 ,2,2
-294 ,computer ,1,3000 ,2,2
-201 ,computer ,1,3000 ,2,2
-206 ,computer ,1,3000 ,2,2
-381 ,computer ,1,3000 ,2,2
-181 ,computer ,1,3000 ,2,2
-271 ,computer ,1,3000 ,2,2
-170 ,computer ,1,3000 ,2,2
-267 ,computer ,1,3000 ,2,2
-380 ,computer ,1,3000 ,2,2
-382 ,computer ,1,3000 ,2,2
-295 ,computer ,1,3000 ,2,2
-182 ,computer ,1,3000 ,2,2
-240 ,computer ,1,3000 ,2,2
-273 ,computer ,8,2700 ,2,2
-292 ,computer ,1,3000 ,2,2
-291 ,computer ,1,3000 ,2,2
-290 ,computer ,1,3000 ,2,2
-579 ,computer ,14  ,2600 ,2,2
-566 ,computer ,14  ,2600 ,2,2
-548 ,computer ,14  ,2600 ,2,2
-549 ,computer ,14  ,2600 ,2,2
-553 ,computer ,14  ,2600 ,2,2
-559 ,computer ,14  ,2600 ,2,2
-628 ,computer ,15  ,2900 ,4,4
-650 ,computer ,15  ,2900 ,4,4
-619 ,computer ,15  ,2900 ,4,4
-604 ,computer ,15  ,2900 ,4,4
-573 ,computer ,15  ,2900 ,4,4
-612 ,computer ,16  ,2900 ,4,4
-620 ,computer ,15  ,2900 ,4,4
-601 ,computer ,15  ,2900 ,4,4
-611 ,computer ,15  ,2900 ,4,4
-602 ,computer ,15  ,2900 ,4,4
-472 ,computer ,5,1000 ,1,1
-480 ,computer ,5,1000 ,1,1
-474 ,computer ,5,1000 ,1,1
-475 ,computer ,5,1000 ,1,1
-471 ,computer ,5,1000 ,1,1
-479 ,computer ,5,1000 ,1,1
-478 ,computer ,5,1000 ,1,1
-473 ,computer ,5,1000 ,1,1
-476 ,computer ,5,1000 ,1,1
-477 ,computer ,5,1000 ,1,1
-481 ,computer ,5,1000 ,1,1
-482 ,computer ,5,1000 ,1,1
-518 ,computer ,17  ,3300 ,2,4
-488 ,computer ,17  ,3300 ,2,4
-527 ,computer ,17  ,3300 ,2,4
-529 ,computer ,17  ,3300 ,2,4
-468 ,computer ,17  ,3300 ,2,4
-550 ,computer ,17  ,3300 ,2,4
-508 ,computer ,17  ,3300 ,2,4
-528 ,computer ,17  ,3300 ,2,4
-530 ,computer ,17  ,3300 ,2,4
-651 ,computer ,17  ,3300 ,2,4
-625 ,computer ,17  ,3300 ,2,4
-496 ,computer ,5,1000 ,1,1
-470 ,computer ,5,1000 ,1,1
-383 ,computer ,18  ,2000 ,2,2
-926 ,computer ,4,3100 ,4,4
-924 ,computer ,4,3100 ,4,4
-908 ,computer ,4,3100 ,4,4
-921 ,computer ,4,3100 ,4,4
-910 ,computer ,4,3100 ,4,4
-913 ,computer ,4,3100 ,4,4
-920 ,computer ,4,3100 ,4,4
-975 ,computer ,4,3100 ,4,4
-999 ,computer ,4,3100 ,4,4
-882 ,computer ,4,3100 ,4,4
-915 ,computer ,4,3100 ,4,4
-905 ,computer ,4,3100 ,4,4
-922 ,computer ,4,3100 ,4,4
-1000 ,computer ,4,3100 ,4,4
-934 ,computer ,4,3100 ,4,4
-551 ,computer ,4,3100 ,4,4
-533 ,computer ,4,3100 ,4,4
-561 ,computer ,4,3100 ,4,4
-532 ,computer ,4,3100 ,4,4
-989 ,computer ,4,3100 ,4,4
-555 ,computer ,4,3100 ,4,4
-992 ,computer ,4,3100 ,4,4
-562 ,computer ,4,3100 ,4,4
-939 ,computer ,4,3100 ,4,4
-540 ,computer ,4,3100 ,4,4
-556 ,computer ,4,3100 ,4,4
-557 ,computer ,4,3100 ,4,4
-538 ,computer ,4,3100 ,4,4
-536 ,computer ,4,3100 ,4,4
-565 ,computer ,4,3100 ,4,4
-89  ,computer ,8,2700 ,2,2
-93  ,computer ,8,2700 ,2,2
-75  ,computer ,8,2700 ,2,2
-88  ,computer ,8,2700 ,2,2
-83  ,computer ,8,2700 ,2,2
-84  ,computer ,8,2700 ,2,2
-1099 ,computer ,19  ,1800 ,2,2
-1096 ,computer ,20  ,1800 ,2,2
-1094 ,computer ,20  ,1800 ,2,2
-1097 ,computer ,20  ,1800 ,2,2
-1098 ,computer ,20  ,1800 ,2,2
-1095 ,computer ,20  ,1800 ,2,2
-782 ,computer ,3,2800 ,2,2
-251 ,computer ,3,2800 ,2,2
-96  ,computer ,3,2800 ,2,2
-232 ,computer ,1,3000 ,2,2
-783 ,computer ,1,3000 ,2,2
-219 ,computer ,3,2800 ,2,2
-191 ,computer ,3,2800 ,2,2
-285 ,computer ,3,2800 ,2,2
+1,658 ,computer ,1,3000 ,2,2
+2,663 ,computer ,1,3000 ,2,2
+3,652 ,computer ,2,3000 ,2,2
+4,463 ,computer ,1,3000 ,2,2
+5,258 ,computer ,3,2800 ,2,2
+6,125 ,computer ,4,3100 ,4,4
+7,77  ,computer ,4,3100 ,4,4
+8,32  ,computer ,4,3100 ,4,4
+9,35  ,computer ,4,3100 ,4,4
+10,167 ,computer ,4,3100 ,4,4
+11,460 ,computer ,4,3100 ,4,4
+12,461 ,computer ,4,3100 ,4,4
+13,428 ,computer ,4,3100 ,4,4
+14,42  ,computer ,4,3100 ,4,4
+15,37  ,computer ,4,3100 ,4,4
+16,44  ,computer ,4,3100 ,4,4
+17,38  ,computer ,4,3100 ,4,4
+18,40  ,computer ,4,3100 ,4,4
+19,39  ,computer ,4,3100 ,4,4
+20,971 ,computer ,4,3100 ,4,4
+21,973 ,computer ,5,1000 ,1,1
+22,980 ,computer ,6,2900 ,1,1
+23,995 ,computer ,6,2900 ,1,1
+24,20  ,computer ,6,2900 ,1,1
+25,8,computer ,6,2900 ,1,1
+26,2,computer ,6,2900 ,1,1
+27,6,computer ,6,2900 ,1,1
+28,17  ,computer ,6,2900 ,1,1
+29,4,computer ,6,2900 ,1,1
+30,7,computer ,6,2900 ,1,1
+31,5,computer ,6,2900 ,1,1
+32,10  ,computer ,6,2900 ,1,1
+33,12  ,computer ,6,2900 ,1,1
+34,391 ,computer ,6,2900 ,1,1
+35,11  ,computer ,6,2900 ,1,1
+36,9,computer ,6,2900 ,1,1
+37,91  ,computer ,3,2800 ,2,2
+38,500 ,computer ,7,2800 ,2,2
+39,398 ,computer ,7,2800 ,2,2
+40,379 ,computer ,7,2800 ,2,2
+41,403 ,computer ,7,2800 ,2,2
+42,384 ,computer ,7,2800 ,2,2
+43,402 ,computer ,7,2800 ,2,2
+44,400 ,computer ,7,2800 ,2,2
+45,387 ,computer ,7,2800 ,2,2
+46,401 ,computer ,7,2800 ,2,2
+47,202 ,computer ,7,2800 ,2,2
+48,389 ,computer ,7,2800 ,2,2
+49,404 ,computer ,7,2800 ,2,2
+50,386 ,computer ,7,2800 ,2,2
+51,385 ,computer ,7,2800 ,2,2
+52,399 ,computer ,7,2800 ,2,2
+53,961 ,computer ,7,2800 ,2,2
+54,102 ,computer ,7,2800 ,2,2
+55,127 ,computer ,8,2700 ,2,2
+56,180 ,computer ,8,2700 ,2,2
+57,332 ,computer ,8,2700 ,2,2
+58,176 ,computer ,8,2700 ,2,2
+59,173 ,computer ,8,2700 ,2,2
+60,119 ,computer ,8,2700 ,2,2
+61,190 ,computer ,8,2700 ,2,2
+62,195 ,computer ,8,2700 ,2,2
+63,178 ,computer ,8,2700 ,2,2
+64,246 ,computer ,8,2700 ,2,2
+65,249 ,computer ,8,2700 ,2,2
+66,303 ,computer ,8,2700 ,2,2
+67,254 ,computer ,8,2700 ,2,2
+68,316 ,computer ,8,2700 ,2,2
+69,116 ,computer ,8,2700 ,2,2
+70,186 ,computer ,8,2700 ,2,2
+71,208 ,computer ,8,2700 ,2,2
+72,154 ,computer ,8,2700 ,2,2
+73,64  ,computer ,8,2700 ,2,2
+74,114 ,computer ,8,2700 ,2,2
+75,115 ,computer ,8,2700 ,2,2
+76,54  ,computer ,8,2700 ,2,2
+77,248 ,computer ,8,2700 ,2,2
+78,43  ,computer ,8,2700 ,2,2
+79,18  ,computer ,8,2700 ,2,2
+80,113 ,computer ,8,2700 ,2,2
+81,266 ,computer ,8,2700 ,2,2
+82,112 ,computer ,8,2700 ,2,2
+83,262 ,computer ,8,2700 ,2,2
+84,163 ,computer ,8,2700 ,2,2
+85,46  ,computer ,8,2700 ,2,2
+86,265 ,computer ,8,2700 ,2,2
+87,74  ,computer ,8,2700 ,2,2
+88,47  ,computer ,8,2700 ,2,2
+89,79  ,computer ,8,2700 ,2,2
+90,94  ,computer ,9,2600 ,2,2
+91,60  ,computer ,9,2600 ,2,2
+92,26  ,computer ,9,2600 ,2,2
+93,31  ,computer ,9,2600 ,2,2
+94,71  ,computer ,9,2600 ,2,2
+95,29  ,computer ,9,2600 ,2,2
+96,67  ,computer ,9,2600 ,2,2
+97,73  ,computer ,9,2600 ,2,2
+98,19  ,computer ,9,2600 ,2,2
+99,52  ,computer ,9,2600 ,2,2
+100,24  ,computer ,9,2600 ,2,2
+101,25  ,computer ,9,2600 ,2,2
+102,363 ,computer ,1,3000 ,2,2
+103,110 ,computer ,9,2600 ,2,2
+104,53  ,computer ,9,2600 ,2,2
+105,160 ,computer ,9,2600 ,2,2
+106,631 ,computer ,3,2800 ,2,2
+107,192 ,computer ,1,3000 ,2,2
+108,642 ,computer ,1,3000 ,2,2
+109,215 ,computer ,3,2800 ,2,2
+110,211 ,computer ,3,2800 ,2,2
+111,187 ,computer ,1,3000 ,2,2
+112,397 ,computer ,1,3000 ,2,2
+113,143 ,computer ,1,3000 ,2,2
+114,314 ,computer ,1,3000 ,2,2
+115,101 ,computer ,1,3000 ,2,2
+116,326 ,computer ,1,3000 ,2,2
+117,319 ,computer ,1,3000 ,2,2
+118,308 ,computer ,1,3000 ,2,2
+119,325 ,computer ,1,3000 ,2,2
+120,107 ,computer ,1,3000 ,2,2
+121,322 ,computer ,8,2700 ,2,2
+122,100 ,computer ,10  ,2800 ,2,2
+123,134 ,computer ,10  ,2800 ,2,2
+124,151 ,computer ,10  ,2800 ,2,2
+125,122 ,computer ,10  ,2800 ,2,2
+126,141 ,computer ,10  ,2800 ,2,2
+127,155 ,computer ,10  ,2800 ,2,2
+128,175 ,computer ,10  ,2800 ,2,2
+129,204 ,computer ,10  ,2800 ,2,2
+130,177 ,computer ,10  ,2800 ,2,2
+131,214 ,computer ,10  ,2800 ,2,2
+132,268 ,computer ,10  ,2800 ,2,2
+133,263 ,computer ,10  ,2800 ,2,2
+134,168 ,computer ,10  ,2800 ,2,2
+135,264 ,computer ,10  ,2800 ,2,2
+136,148 ,computer ,10  ,2800 ,2,2
+137,129 ,computer ,10  ,2800 ,2,2
+138,121 ,computer ,10  ,2800 ,2,2
+139,166 ,computer ,11  ,2800 ,2,2
+140,105 ,computer ,10  ,2800 ,2,2
+141,123 ,computer ,10  ,2800 ,2,2
+142,242 ,computer ,10  ,2800 ,2,2
+143,164 ,computer ,10  ,2800 ,2,2
+144,157 ,computer ,10  ,2800 ,2,2
+145,153 ,computer ,10  ,2800 ,2,2
+146,224 ,computer ,10  ,2800 ,2,2
+147,171 ,computer ,10  ,2800 ,2,2
+148,169 ,computer ,10  ,2800 ,2,2
+149,247 ,computer ,10  ,2800 ,2,2
+150,131 ,computer ,10  ,2800 ,2,2
+151,218 ,computer ,10  ,2800 ,2,2
+152,158 ,computer ,10  ,2800 ,2,2
+153,142 ,computer ,10  ,2800 ,2,2
+154,162 ,computer ,10  ,2800 ,2,2
+155,243 ,computer ,10  ,2800 ,2,2
+156,244 ,computer ,10  ,2800 ,2,2
+157,165 ,computer ,10  ,2800 ,2,2
+158,130 ,computer ,10  ,2800 ,2,2
+159,126 ,computer ,10  ,2800 ,2,2
+160,106 ,computer ,10  ,2800 ,2,2
+161,146 ,computer ,11  ,2800 ,2,2
+162,145 ,computer ,10  ,2800 ,2,2
+163,144 ,computer ,11  ,2800 ,2,2
+164,156 ,computer ,10  ,2800 ,2,2
+165,128 ,computer ,10  ,2800 ,2,2
+166,120 ,computer ,10  ,2800 ,2,2
+167,132 ,computer ,10  ,2800 ,2,2
+168,288 ,computer ,10  ,2800 ,2,2
+169,104 ,computer ,10  ,2800 ,2,2
+170,124 ,computer ,10  ,2800 ,2,2
+171,133 ,computer ,10  ,2800 ,2,2
+172,159 ,computer ,10  ,2800 ,2,2
+173,103 ,computer ,10  ,2800 ,2,2
+174,1070 ,computer ,6,2900 ,1,1
+175,1068 ,computer ,6,2900 ,1,1
+176,1076 ,computer ,6,2900 ,1,1
+177,1083 ,computer ,6,2900 ,1,1
+178,1087 ,computer ,6,2900 ,1,1
+179,1067 ,computer ,6,2900 ,1,1
+180,1077 ,computer ,6,2900 ,1,1
+181,1074 ,computer ,6,2900 ,1,1
+182,193 ,computer ,1,3000 ,2,2
+183,108 ,computer ,1,3000 ,2,2
+184,951 ,computer ,1,3000 ,2,2
+185,1081 ,computer ,6,2900 ,1,1
+186,1072 ,computer ,6,2900 ,1,1
+187,1073 ,computer ,6,2900 ,1,1
+188,1078 ,computer ,6,2900 ,1,1
+189,1075 ,computer ,6,2900 ,1,1
+190,1080 ,computer ,6,2900 ,1,1
+191,1079 ,computer ,6,2900 ,1,1
+192,1071 ,computer ,6,2900 ,1,1
+193,884 ,computer ,1,3000 ,2,2
+194,426 ,computer ,8,2700 ,2,2
+195,450 ,computer ,8,2700 ,2,2
+196,361 ,computer ,8,2700 ,2,2
+197,359 ,computer ,8,2700 ,2,2
+198,423 ,computer ,8,2700 ,2,2
+199,360 ,computer ,8,2700 ,2,2
+200,998 ,computer ,8,2700 ,2,2
+201,455 ,computer ,8,2700 ,2,2
+202,1091 ,computer ,6,2900 ,1,1
+203,1090 ,computer ,6,2900 ,1,1
+204,1038 ,computer ,6,2900 ,1,1
+205,1037 ,computer ,6,2900 ,1,1
+206,1089 ,computer ,6,2900 ,1,1
+207,1085 ,computer ,6,2900 ,1,1
+208,1032 ,computer ,6,2900 ,1,1
+209,1035 ,computer ,6,2900 ,1,1
+210,1028 ,computer ,6,2900 ,1,1
+211,1036 ,computer ,6,2900 ,1,1
+212,1033 ,computer ,6,2900 ,1,1
+213,1030 ,computer ,6,2900 ,1,1
+214,1034 ,computer ,6,2900 ,1,1
+215,1031 ,computer ,6,2900 ,1,1
+216,348 ,computer ,13  ,2900 ,2,2
+217,355 ,computer ,13  ,2900 ,2,2
+218,356 ,computer ,13  ,2900 ,2,2
+219,354 ,computer ,13  ,2900 ,2,2
+220,353 ,computer ,13  ,2900 ,2,2
+221,357 ,computer ,13  ,2900 ,2,2
+222,349 ,computer ,13  ,2900 ,2,2
+223,462 ,computer ,13  ,2900 ,2,2
+224,350 ,computer ,13  ,2900 ,2,2
+225,655 ,computer ,1,3000 ,2,2
+226,311 ,computer ,3,2800 ,2,2
+227,135 ,computer ,6,2900 ,1,1
+228,137 ,computer ,6,2900 ,1,1
+229,139 ,computer ,6,2900 ,1,1
+230,138 ,computer ,6,2900 ,1,1
+231,98  ,computer ,6,2900 ,1,1
+232,296 ,computer ,1,3000 ,2,2
+233,297 ,computer ,8,2700 ,2,2
+234,1088 ,computer ,1,3000 ,2,2
+235,302 ,computer ,8,2700 ,2,2
+236,286 ,computer ,8,2700 ,2,2
+237,95  ,computer ,8,2700 ,2,2
+238,213 ,computer ,1,3000 ,2,2
+239,255 ,computer ,2,3000 ,2,2
+240,294 ,computer ,1,3000 ,2,2
+241,201 ,computer ,1,3000 ,2,2
+242,206 ,computer ,1,3000 ,2,2
+243,381 ,computer ,1,3000 ,2,2
+244,181 ,computer ,1,3000 ,2,2
+245,271 ,computer ,1,3000 ,2,2
+246,170 ,computer ,1,3000 ,2,2
+247,267 ,computer ,1,3000 ,2,2
+248,380 ,computer ,1,3000 ,2,2
+249,382 ,computer ,1,3000 ,2,2
+250,295 ,computer ,1,3000 ,2,2
+251,182 ,computer ,1,3000 ,2,2
+252,240 ,computer ,1,3000 ,2,2
+253,273 ,computer ,8,2700 ,2,2
+254,292 ,computer ,1,3000 ,2,2
+255,291 ,computer ,1,3000 ,2,2
+256,290 ,computer ,1,3000 ,2,2
+257,579 ,computer ,14  ,2600 ,2,2
+258,566 ,computer ,14  ,2600 ,2,2
+259,548 ,computer ,14  ,2600 ,2,2
+260,549 ,computer ,14  ,2600 ,2,2
+261,553 ,computer ,14  ,2600 ,2,2
+262,559 ,computer ,14  ,2600 ,2,2
+263,628 ,computer ,15  ,2900 ,4,4
+264,650 ,computer ,15  ,2900 ,4,4
+265,619 ,computer ,15  ,2900 ,4,4
+266,604 ,computer ,15  ,2900 ,4,4
+267,573 ,computer ,15  ,2900 ,4,4
+268,612 ,computer ,16  ,2900 ,4,4
+269,620 ,computer ,15  ,2900 ,4,4
+270,601 ,computer ,15  ,2900 ,4,4
+271,611 ,computer ,15  ,2900 ,4,4
+272,602 ,computer ,15  ,2900 ,4,4
+273,472 ,computer ,5,1000 ,1,1
+274,480 ,computer ,5,1000 ,1,1
+275,474 ,computer ,5,1000 ,1,1
+276,475 ,computer ,5,1000 ,1,1
+277,471 ,computer ,5,1000 ,1,1
+278,479 ,computer ,5,1000 ,1,1
+279,478 ,computer ,5,1000 ,1,1
+280,473 ,computer ,5,1000 ,1,1
+281,476 ,computer ,5,1000 ,1,1
+282,477 ,computer ,5,1000 ,1,1
+283,481 ,computer ,5,1000 ,1,1
+284,482 ,computer ,5,1000 ,1,1
+285,518 ,computer ,17  ,3300 ,2,4
+286,488 ,computer ,17  ,3300 ,2,4
+287,527 ,computer ,17  ,3300 ,2,4
+288,529 ,computer ,17  ,3300 ,2,4
+289,468 ,computer ,17  ,3300 ,2,4
+290,550 ,computer ,17  ,3300 ,2,4
+291,508 ,computer ,17  ,3300 ,2,4
+292,528 ,computer ,17  ,3300 ,2,4
+293,530 ,computer ,17  ,3300 ,2,4
+294,651 ,computer ,17  ,3300 ,2,4
+295,625 ,computer ,17  ,3300 ,2,4
+296,496 ,computer ,5,1000 ,1,1
+297,470 ,computer ,5,1000 ,1,1
+298,383 ,computer ,18  ,2000 ,2,2
+299,926 ,computer ,4,3100 ,4,4
+300,924 ,computer ,4,3100 ,4,4
+301,908 ,computer ,4,3100 ,4,4
+302,921 ,computer ,4,3100 ,4,4
+303,910 ,computer ,4,3100 ,4,4
+304,913 ,computer ,4,3100 ,4,4
+305,920 ,computer ,4,3100 ,4,4
+306,975 ,computer ,4,3100 ,4,4
+307,999 ,computer ,4,3100 ,4,4
+308,882 ,computer ,4,3100 ,4,4
+309,915 ,computer ,4,3100 ,4,4
+310,905 ,computer ,4,3100 ,4,4
+311,922 ,computer ,4,3100 ,4,4
+312,1000 ,computer ,4,3100 ,4,4
+313,934 ,computer ,4,3100 ,4,4
+314,551 ,computer ,4,3100 ,4,4
+315,533 ,computer ,4,3100 ,4,4
+316,561 ,computer ,4,3100 ,4,4
+317,532 ,computer ,4,3100 ,4,4
+318,989 ,computer ,4,3100 ,4,4
+319,555 ,computer ,4,3100 ,4,4
+320,992 ,computer ,4,3100 ,4,4
+321,562 ,computer ,4,3100 ,4,4
+322,939 ,computer ,4,3100 ,4,4
+323,540 ,computer ,4,3100 ,4,4
+324,556 ,computer ,4,3100 ,4,4
+325,557 ,computer ,4,3100 ,4,4
+326,538 ,computer ,4,3100 ,4,4
+327,536 ,computer ,4,3100 ,4,4
+328,565 ,computer ,4,3100 ,4,4
+329,89  ,computer ,8,2700 ,2,2
+330,93  ,computer ,8,2700 ,2,2
+331,75  ,computer ,8,2700 ,2,2
+332,88  ,computer ,8,2700 ,2,2
+333,83  ,computer ,8,2700 ,2,2
+334,84  ,computer ,8,2700 ,2,2
+335,1099 ,computer ,19  ,1800 ,2,2
+336,1096 ,computer ,20  ,1800 ,2,2
+337,1094 ,computer ,20  ,1800 ,2,2
+338,1097 ,computer ,20  ,1800 ,2,2
+339,1098 ,computer ,20  ,1800 ,2,2
+340,1095 ,computer ,20  ,1800 ,2,2
+341,782 ,computer ,3,2800 ,2,2
+342,251 ,computer ,3,2800 ,2,2
+343,96  ,computer ,3,2800 ,2,2
+344,232 ,computer ,1,3000 ,2,2
+345,783 ,computer ,1,3000 ,2,2
+346,219 ,computer ,3,2800 ,2,2
+347,191 ,computer ,3,2800 ,2,2
+348,285 ,computer ,3,2800 ,2,2
