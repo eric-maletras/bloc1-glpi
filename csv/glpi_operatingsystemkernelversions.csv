@@ -1,0 +1,8 @@
+id,"operatingsystemkernels_id", "name", "comment"
+1,2, "5.1.2600", "Service Pack 3"
+2,2, "5.1.2600", "Service Pack 3 (Terminal Services in Remote Admin Mode)"
+3,2, "6.1.7601", "Service Pack 1"
+4,2, "6.1.7601", "Service Pack 1 (Terminal Services in Remote Admin Mode)"
+5,2, "5.1.2600", "Service Pack 2"
+6,2, "6.1.7600",  "(Terminal Services in Remote Admin Mode)"
+7,1, "2.6.32-30-pve", "#1 SMP Wed Jun 25 05:54:15 CEST 2014"
