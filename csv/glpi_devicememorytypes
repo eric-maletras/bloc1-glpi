@@ -1,0 +1,24 @@
+id, designation, frequence, devicememorytypes_id
+1,DIMM1 (No ECC), 1333, 7
+2,XMM4 (No ECC), 800, 7
+3,SYSTEM ROM (No ECC), , 5
+4,XMM4 (No ECC), 667, 7
+5,ChannelA-DIMM0 (No ECC), 1333, 7
+6,ChannelB-DIMM0 (No ECC), 1333, 7
+7,XMM1 (No ECC), 533, 7
+8,XMM3 (No ECC), 533, 7
+9,XMM4 (No ECC), 1333, 7
+10,XMM1 (No ECC), 667, 7
+11,XMM3 (No ECC), 667, 7
+12,XMM3 (No ECC), 1333, 7
+13,SYSTEM ROM, , 5
+14,XMM4, , 7
+15,XMM3, , 7
+16,XMM3, , 6
+17,XMM1, , 6
+18,XMM2 (No ECC), 667, 7
+19,DIMM0 (No ECC), , 7
+20,DIMM3 (No ECC), 1600, 7
+21,DIMM1 (No ECC), 1600, 7
+22,DIMM0 (No ECC), 1333, 7
+23,XMM4 (No ECC), 533, 7
