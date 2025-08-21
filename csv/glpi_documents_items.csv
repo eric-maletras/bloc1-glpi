@@ -1,7 +1,7 @@
 id,documents_id,items_id,itemtype,date
-1,1,2,founisseur,NOW()
-2,2,1,founisseur,NOW()
-3,3,3,founisseur,NOW()
-4,4,2,founisseur,NOW()
-5,5,1,founisseur,NOW()
-6,6,3,founisseur,NOW()
+1,1,2,Supplier,NOW()
+2,2,1,Supplier,NOW()
+3,3,3,Supplier,NOW()
+4,4,2,Supplier,NOW()
+5,5,1,Supplier,NOW()
+6,6,3,Supplier,NOW()
