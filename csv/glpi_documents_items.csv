@@ -1,7 +1,7 @@
-id,documents_id,items_id,itemtype,date
-1,1,2,Supplier,NOW()
-2,2,1,Supplier,NOW()
-3,3,3,Supplier,NOW()
-4,4,2,Supplier,NOW()
-5,5,1,Supplier,NOW()
-6,6,3,Supplier,NOW()
+id,documents_id,items_id,itemtype
+1,1,2,Supplier
+2,2,1,Supplier
+3,3,3,Supplier
+4,4,2,Supplier
+5,5,1,Supplier
+6,6,3,Supplier
