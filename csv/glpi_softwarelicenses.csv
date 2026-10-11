@@ -1,0 +1,3 @@
+id,softwares_id,name,completename,level,softwarelicensetypes_id,number,serial,softwareversions_id_buy,softwareversions_id_use,expire,comment
+1,1,Office 2010 - contrat Open,Office 2010 - contrat Open,1,1,300,OPEN-M2L-2012-0417,1,1,,Contrat Open de 300 postes
+2,7,KES 10 - abonnement 360 postes,KES 10 - abonnement 360 postes,1,2,360,KL4863XAQFS-M2L,7,7,NOW+1M,Abonnement annuel à renouveler

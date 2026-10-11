@@ -1,0 +1,9 @@
+id,name,ref,cartridgeitemtypes_id,manufacturers_id,alarm_threshold
+1,HP 05X noir,CE505X,1,3,2
+2,HP 42X noir,Q5942X,1,3,2
+3,Brother TN-3280 noir,TN-3280,1,10,2
+4,HP 304A noir,CC530A,1,3,2
+5,HP 304A cyan,CC531A,1,3,2
+6,HP 304A jaune,CC532A,1,3,2
+7,HP 304A magenta,CC533A,1,3,2
+8,Samsung MLT-D2092L noir,MLT-D2092L,1,11,2

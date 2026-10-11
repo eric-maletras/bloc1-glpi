@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
-# Import du jeu d'inventaire M2L (360 PC, composants, fournisseurs, devis et
-# factures) dans GLPI. Vérifié sur le schéma de GLPI 12.0.0.
+# Import du jeu d'inventaire M2L dans GLPI : 360 PC et leurs composants,
+# fournisseurs, devis et factures, et un échantillon d'écrans (branchés aux
+# PC), d'imprimantes et de leurs cartouches, de matériel réseau, de logiciels
+# installés et de licences. Vérifié sur le schéma de GLPI 12.0.0.
+# Aucun nom ni numéro de série ne reprend le matériel que la mission fait
+# saisir à la main (MON-*, IMP-ADM-*, IMP-FORM-*, SW-CORE-01, AP-WIFI-*...).
 #
 #   sudo bash import-sql.sh
 #
@@ -34,7 +38,10 @@ SQL_FILE="$WORKDIR/import.sql"
 # Listes fusionnées par nom avec l'existant
 DROPDOWNS="glpi_states glpi_computertypes glpi_computermodels glpi_manufacturers
   glpi_operatingsystems glpi_operatingsystemkernels glpi_devicefirmwaretypes
-  glpi_devicememorytypes glpi_suppliertypes glpi_documentcategories"
+  glpi_devicememorytypes glpi_suppliertypes glpi_documentcategories
+  glpi_monitortypes glpi_monitormodels glpi_printertypes glpi_printermodels
+  glpi_networkequipmenttypes glpi_networkequipmentmodels glpi_cartridgeitemtypes
+  glpi_softwarecategories glpi_softwarelicensetypes"
 
 # Références simples : table colonne table_visée
 FKS="glpi_computers computermodels_id glpi_computermodels
@@ -57,13 +64,52 @@ glpi_items_devicenetworkcards devicenetworkcards_id glpi_devicenetworkcards
 glpi_suppliers suppliertypes_id glpi_suppliertypes
 glpi_documents documentcategories_id glpi_documentcategories
 glpi_documents_items documents_id glpi_documents
-glpi_infocoms suppliers_id glpi_suppliers"
+glpi_infocoms suppliers_id glpi_suppliers
+glpi_monitors monitormodels_id glpi_monitormodels
+glpi_monitors monitortypes_id glpi_monitortypes
+glpi_monitors manufacturers_id glpi_manufacturers
+glpi_monitors states_id glpi_states
+glpi_printers printermodels_id glpi_printermodels
+glpi_printers printertypes_id glpi_printertypes
+glpi_printers manufacturers_id glpi_manufacturers
+glpi_printers states_id glpi_states
+glpi_networkequipments networkequipmentmodels_id glpi_networkequipmentmodels
+glpi_networkequipments networkequipmenttypes_id glpi_networkequipmenttypes
+glpi_networkequipments manufacturers_id glpi_manufacturers
+glpi_networkequipments states_id glpi_states
+glpi_cartridgeitems cartridgeitemtypes_id glpi_cartridgeitemtypes
+glpi_cartridgeitems manufacturers_id glpi_manufacturers
+glpi_cartridgeitems_printermodels cartridgeitems_id glpi_cartridgeitems
+glpi_cartridgeitems_printermodels printermodels_id glpi_printermodels
+glpi_cartridges cartridgeitems_id glpi_cartridgeitems
+glpi_cartridges printers_id glpi_printers
+glpi_softwares manufacturers_id glpi_manufacturers
+glpi_softwares softwarecategories_id glpi_softwarecategories
+glpi_softwareversions softwares_id glpi_softwares
+glpi_softwareversions states_id glpi_states
+glpi_items_softwareversions softwareversions_id glpi_softwareversions
+glpi_softwarelicenses softwares_id glpi_softwares
+glpi_softwarelicenses softwarelicensetypes_id glpi_softwarelicensetypes
+glpi_softwarelicenses softwareversions_id_buy glpi_softwareversions
+glpi_softwarelicenses softwareversions_id_use glpi_softwareversions
+glpi_items_softwarelicenses softwarelicenses_id glpi_softwarelicenses"
 
-# Références polymorphes (itemtype + items_id)
-POLY="glpi_items_operatingsystems glpi_items_devicefirmwares glpi_items_disks
-  glpi_items_devicememories glpi_items_deviceprocessors glpi_items_deviceharddrives
-  glpi_items_devicenetworkcards glpi_networkports glpi_infocoms glpi_documents_items"
-POLY_TYPES="Computer:glpi_computers Supplier:glpi_suppliers"
+# Références polymorphes : table colonne_itemtype colonne_items_id
+POLY="glpi_items_operatingsystems itemtype items_id
+glpi_items_devicefirmwares itemtype items_id
+glpi_items_disks itemtype items_id
+glpi_items_devicememories itemtype items_id
+glpi_items_deviceprocessors itemtype items_id
+glpi_items_deviceharddrives itemtype items_id
+glpi_items_devicenetworkcards itemtype items_id
+glpi_networkports itemtype items_id
+glpi_infocoms itemtype items_id
+glpi_documents_items itemtype items_id
+glpi_items_softwareversions itemtype items_id
+glpi_items_softwarelicenses itemtype items_id
+glpi_assets_assets_peripheralassets itemtype_asset items_id_asset
+glpi_assets_assets_peripheralassets itemtype_peripheral items_id_peripheral"
+POLY_TYPES="Computer:glpi_computers Supplier:glpi_suppliers Monitor:glpi_monitors"
 
 # Types de matériel auxquels un statut s'applique ($CFG_GLPI['state_types'])
 STATE_TYPES="Computer Monitor NetworkEquipment Peripheral Phone Printer
@@ -124,7 +170,7 @@ in_list() {
 }
 
 # Rend une expression SQL CASE ... qui convertit un jeton de date dans @VARNAME
-# Jetons acceptés: NOW, NOW-<N>D|M|A et NOW()-<N>D|M|A  (insensible aux majuscules)
+# Jetons acceptés: NOW, NOW-<N>D|M|A, NOW+<N>D|M|A et NOW()-<N>D|M|A  (insensible aux majuscules)
 sql_from_now_token() {
   local var="$1"     # ex: @order_date_raw
   cat <<EOF
@@ -139,6 +185,14 @@ CASE
         WHEN 'D' THEN DATE_SUB(CURDATE(), INTERVAL CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(UPPER(REPLACE(REPLACE(${var},'(',''),')','')),'-',-1),'D',1) AS SIGNED) DAY)
         WHEN 'M' THEN DATE_SUB(CURDATE(), INTERVAL CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(UPPER(REPLACE(REPLACE(${var},'(',''),')','')),'-',-1),'M',1) AS SIGNED) MONTH)
         WHEN 'A' THEN DATE_SUB(CURDATE(), INTERVAL CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(UPPER(REPLACE(REPLACE(${var},'(',''),')','')),'-',-1),'A',1) AS SIGNED) YEAR)
+        ELSE NULL
+      END
+  WHEN UPPER(REPLACE(REPLACE(${var},'(',''),')','')) LIKE 'NOW+%'
+    THEN
+      CASE RIGHT(UPPER(${var}),1)
+        WHEN 'D' THEN DATE_ADD(CURDATE(), INTERVAL CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(UPPER(${var}),'+',-1),'D',1) AS SIGNED) DAY)
+        WHEN 'M' THEN DATE_ADD(CURDATE(), INTERVAL CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(UPPER(${var}),'+',-1),'M',1) AS SIGNED) MONTH)
+        WHEN 'A' THEN DATE_ADD(CURDATE(), INTERVAL CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(UPPER(${var}),'+',-1),'A',1) AS SIGNED) YEAR)
         ELSE NULL
       END
   ELSE
@@ -223,7 +277,7 @@ EOF
 # Écrit sur la sortie standard le SQL qui verse les tables imp_* dans les
 # vraies tables. Arguments : les tables chargées.
 emit_merge() {
-  local staged=" $* " t col ref pt
+  local staged=" $* " t col ref pt tcol icol
   is_staged() { [[ "$staged" == *" $1 "* ]]; }
 
   echo "-- ===== Fusion avec les données existantes ====="
@@ -233,8 +287,10 @@ emit_merge() {
   # Nettoyage : espaces parasites des CSV, itemtype en minuscules, niveau des statuts
   for t in $*; do
     in_list "$t" "$DROPDOWNS" && echo "UPDATE \`imp_$t\` SET name = TRIM(name);"
-    in_list "$t" "$POLY" && echo "UPDATE \`imp_$t\` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));"
   done
+  while read -r t tcol icol; do
+    is_staged "$t" && echo "UPDATE \`imp_$t\` SET $tcol = CONCAT(UPPER(LEFT($tcol, 1)), SUBSTRING($tcol, 2));"
+  done <<<"$POLY"
   is_staged glpi_states && echo "UPDATE imp_glpi_states SET completename = TRIM(completename), level = 1 WHERE states_id = 0;"
 
   # Refus d'un second import
@@ -270,12 +326,12 @@ EOF
   while read -r t col ref; do
     is_staged "$t" && is_staged "$ref" && translate_col "$t" "$col" "$ref"
   done <<<"$FKS"
-  for t in $*; do
-    in_list "$t" "$POLY" || continue
+  while read -r t tcol icol; do
+    is_staged "$t" || continue
     for pt in $POLY_TYPES; do
-      is_staged "${pt#*:}" && translate_col "$t" items_id "${pt#*:}" "itemtype = '${pt%%:*}'"
+      is_staged "${pt#*:}" && translate_col "$t" "$icol" "${pt#*:}" "$tcol = '${pt%%:*}'"
     done
-  done
+  done <<<"$POLY"
 
   # Les lignes prennent leur nouvel id, puis seules les nouvelles sont versées
   for t in $*; do
@@ -383,6 +439,37 @@ main() {
   load_csv glpi_infocoms \
     "itemtype, items_id, suppliers_id, order_number, bill, value, sink_type, sink_time, sink_coeff, warranty_duration, buy_date, use_date, order_date, delivery_date, warranty_date" \
     "buy_date, use_date, order_date, delivery_date, warranty_date"
+
+  # Échantillon : écrans branchés aux PC
+  load_csv glpi_monitortypes "id, name"
+  load_csv glpi_monitormodels "id, name"
+  load_csv glpi_monitors "id, name, serial, monitormodels_id, monitortypes_id, manufacturers_id, size, have_subd, have_dvi, states_id, comment"
+  load_csv glpi_assets_assets_peripheralassets "id, itemtype_asset, items_id_asset, itemtype_peripheral, items_id_peripheral"
+
+  # Échantillon : imprimantes et cartouches
+  load_csv glpi_printertypes "id, name"
+  load_csv glpi_printermodels "id, name"
+  load_csv glpi_printers "id, name, serial, printermodels_id, printertypes_id, manufacturers_id, states_id, last_pages_counter, have_usb, have_ethernet"
+  load_csv glpi_cartridgeitemtypes "id, name"
+  load_csv glpi_cartridgeitems "id, name, ref, cartridgeitemtypes_id, manufacturers_id, alarm_threshold"
+  load_csv glpi_cartridgeitems_printermodels "id, cartridgeitems_id, printermodels_id"
+  load_csv glpi_cartridges "id, cartridgeitems_id, printers_id, date_in, date_use, date_out, pages" \
+    "date_in, date_use, date_out"
+
+  # Échantillon : matériel réseau
+  load_csv glpi_networkequipmenttypes "id, name"
+  load_csv glpi_networkequipmentmodels "id, name"
+  load_csv glpi_networkequipments "id, name, serial, networkequipmentmodels_id, networkequipmenttypes_id, manufacturers_id, states_id, comment"
+
+  # Échantillon : logiciels installés et licences
+  load_csv glpi_softwarecategories "id, name, softwarecategories_id, completename, level"
+  load_csv glpi_softwares "id, name, manufacturers_id, softwarecategories_id"
+  load_csv glpi_softwareversions "id, softwares_id, name, states_id"
+  load_csv glpi_items_softwareversions "id, items_id, itemtype, softwareversions_id, date_install" "date_install"
+  load_csv glpi_softwarelicensetypes "id, name"
+  load_csv glpi_softwarelicenses "id, softwares_id, name, completename, level, softwarelicensetypes_id, number, serial, softwareversions_id_buy, softwareversions_id_use, expire, comment" \
+    "expire"
+  load_csv glpi_items_softwarelicenses "id, items_id, itemtype, softwarelicenses_id"
 
   #######################################################################################
 
