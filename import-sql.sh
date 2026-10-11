@@ -1,4 +1,23 @@
 #!/usr/bin/env bash
+# Import du jeu d'inventaire M2L (360 PC, composants, fournisseurs, devis et
+# factures) dans GLPI. Vérifié sur le schéma de GLPI 12.0.0.
+#
+#   sudo bash import-sql.sh
+#
+# L'import AJOUTE ses données à celles déjà présentes, rien n'est vidé :
+# - les identifiants des CSV sont décalés au-delà des plus grands id existants
+#   (inchangés sur une base vide), et toutes les références suivent ;
+# - les listes (statuts, fabricants, types, modèles, systèmes...) sont
+#   fusionnées par nom : un « Hewlett-Packard » déjà saisi est réutilisé ;
+# - tout passe dans une seule transaction : en cas d'erreur, la base est
+#   intacte ;
+# - un second lancement est refusé (numéros de série déjà présents).
+#
+# Variables facultatives :
+#   GLPI_FILES  dossier des données de GLPI (détecté : /var/lib/glpi après la
+#               sécurisation, sinon /var/www/glpi/files)
+#   CSV_BASE    source des CSV et des PDF : URL du dépôt (par défaut) ou
+#               dossier local, par exemple un clone du dépôt
 set -euo pipefail
 
 # ===== Paramètres =====
@@ -8,8 +27,48 @@ DB_USER="root"
 DB_PASS=""                     # vide si tu utilises ~/.my.cnf
 MYSQL_OPTS="--local-infile=1 --default-character-set=utf8mb4"
 WORKDIR="/tmp/glpi_csv_import"
-rm -rf $WORKDIR
-mkdir -p "$WORKDIR"
+CSV_BASE="${CSV_BASE:-https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main}"
+WEB_USER="www-data"
+SQL_FILE="$WORKDIR/import.sql"
+
+# Listes fusionnées par nom avec l'existant
+DROPDOWNS="glpi_states glpi_computertypes glpi_computermodels glpi_manufacturers
+  glpi_operatingsystems glpi_operatingsystemkernels glpi_devicefirmwaretypes
+  glpi_devicememorytypes glpi_suppliertypes glpi_documentcategories"
+
+# Références simples : table colonne table_visée
+FKS="glpi_computers computermodels_id glpi_computermodels
+glpi_computers computertypes_id glpi_computertypes
+glpi_computers manufacturers_id glpi_manufacturers
+glpi_computers states_id glpi_states
+glpi_operatingsystemkernelversions operatingsystemkernels_id glpi_operatingsystemkernels
+glpi_items_operatingsystems operatingsystems_id glpi_operatingsystems
+glpi_items_operatingsystems operatingsystemkernelversions_id glpi_operatingsystemkernelversions
+glpi_devicefirmwares manufacturers_id glpi_manufacturers
+glpi_devicefirmwares devicefirmwaretypes_id glpi_devicefirmwaretypes
+glpi_items_devicefirmwares devicefirmwares_id glpi_devicefirmwares
+glpi_devicememories devicememorytypes_id glpi_devicememorytypes
+glpi_items_devicememories devicememories_id glpi_devicememories
+glpi_deviceprocessors manufacturers_id glpi_manufacturers
+glpi_items_deviceprocessors deviceprocessors_id glpi_deviceprocessors
+glpi_deviceharddrives manufacturers_id glpi_manufacturers
+glpi_items_deviceharddrives deviceharddrives_id glpi_deviceharddrives
+glpi_items_devicenetworkcards devicenetworkcards_id glpi_devicenetworkcards
+glpi_suppliers suppliertypes_id glpi_suppliertypes
+glpi_documents documentcategories_id glpi_documentcategories
+glpi_documents_items documents_id glpi_documents
+glpi_infocoms suppliers_id glpi_suppliers"
+
+# Références polymorphes (itemtype + items_id)
+POLY="glpi_items_operatingsystems glpi_items_devicefirmwares glpi_items_disks
+  glpi_items_devicememories glpi_items_deviceprocessors glpi_items_deviceharddrives
+  glpi_items_devicenetworkcards glpi_networkports glpi_infocoms glpi_documents_items"
+POLY_TYPES="Computer:glpi_computers Supplier:glpi_suppliers"
+
+# Types de matériel auxquels un statut s'applique ($CFG_GLPI['state_types'])
+STATE_TYPES="Computer Monitor NetworkEquipment Peripheral Phone Printer
+  SoftwareLicense Certificate Enclosure PDU Line Rack SoftwareVersion Cluster
+  Contract Appliance DatabaseInstance Cable Unmanaged PassiveDCEquipment"
 
 # Wrapper mysql (sortie simple, variables expensées)
 mysql_exec() {
@@ -17,31 +76,31 @@ mysql_exec() {
   mysql -h "$DB_HOST" -u "$DB_USER" $MYSQL_OPTS "$DB_NAME" -e "$1"
 }
 
-# Télécharge un CSV via wget (réécrit systématiquement le fichier local)
-fetch_csv() {
-  local url="$1" dst="$2"
-  echo ">> Téléchargement: $url -> $dst"
-
-  # S'assure que le dossier existe et supprime l'ancien fichier le cas échéant
+# Récupère un fichier du dépôt (URL ou dossier local, selon CSV_BASE)
+fetch_file() {
+  local rel="$1" dst="$2"
+  echo ">> Récupération: $rel"
   mkdir -p "$(dirname "$dst")"
-  [[ -e "$dst" ]] && rm -f -- "$dst"
+  rm -f -- "$dst"
 
-  # Force le rafraîchissement côté proxy/CDN (no-cache + cache-buster)
-  local sep='?'; [[ "$url" == *\?* ]] && sep='&'
-  local url_nc="${url}${sep}nocache=$(date +%s)"
-
-  if ! wget -q --header='Cache-Control: no-cache' --no-cache -O "$dst" "$url_nc"; then
-    echo "!! Échec du téléchargement: $url" >&2
-    return 1
+  if [[ -d "$CSV_BASE" ]]; then
+    cp -- "$CSV_BASE/$rel" "$dst"
+  else
+    # Force le rafraîchissement côté proxy/CDN (no-cache + cache-buster)
+    if ! wget -q --header='Cache-Control: no-cache' --no-cache -O "$dst" "$CSV_BASE/$rel?nocache=$(date +%s)"; then
+      echo "!! Échec du téléchargement: $CSV_BASE/$rel" >&2
+      return 1
+    fi
   fi
 
-  # Contrôle basique
   if [[ ! -s "$dst" ]]; then
-    echo "!! Fichier vide après téléchargement: $dst" >&2
+    echo "!! Fichier vide: $dst" >&2
     return 1
   fi
+  # Un CSV enregistré sous Windows garde ses fins de ligne CRLF
+  [[ "$dst" == *.csv ]] && sed -i 's/\r$//' "$dst"
+  return 0
 }
-
 
 # Teste si une colonne existe (0 = existe, 1 = n’existe pas)
 has_column() {
@@ -55,12 +114,11 @@ has_column() {
   [[ "$n" -ge 1 ]]
 }
 
-# true si $1 (mot) est présent dans la liste CSV $2
-in_csv_list() {
-  local word="$1" list="$2"
-  IFS=',' read -ra arr <<<"$list"
-  for x in "${arr[@]}"; do
-    [[ "${x// /}" == "$word" ]] && return 0
+# true si $1 (mot) est présent dans la liste $2 (séparée par virgules ou espaces)
+in_list() {
+  local word="$1" list="$2" x
+  for x in ${list//,/ }; do
+    [[ "$x" == "$word" ]] && return 0
   done
   return 1
 }
@@ -90,34 +148,31 @@ END
 EOF
 }
 
+STAGED=""   # tables chargées en table temporaire imp_<table>
 
-# Charge un CSV (TRUNCATE + LOAD DATA), avec interprétation des jetons date.
+# Écrit dans $SQL_FILE le chargement d'un CSV dans une copie temporaire de la
+# table (imp_<table>), avec interprétation des jetons date.
 # Usage:
-#   load_csv TABLE URL "col1,col2,..." "datecol1,datecol2,..."
+#   stage_csv TABLE FICHIER "col1,col2,..." "datecol1,datecol2,..."
 # - Le 4e paramètre est optionnel. S'il est vide, aucune colonne n'est interprétée.
-load_csv() {
+stage_csv() {
   local table="$1"
-  local url="$2"
+  local file="$2"
   local columns="$3"          # colonnes dans l'ordre du CSV
   local date_cols="${4-}"     # sous-ensemble de $columns contenant des dates à interpréter
-  local tmp="$WORKDIR/${table}.csv"
-
-  fetch_csv "$url" "$tmp"
 
   # Construit la liste de colonnes du LOAD DATA : pour une date on met @col_raw
   local load_list=""            # ex: id, name, @order_date_raw, ...
   local set_parts=()            # ex: order_date = <CASE ...>, ...
 
+  local col
   IFS=',' read -ra cols <<<"$columns"
   for col in "${cols[@]}"; do
     col="${col// /}"  # trim simple
-    if [[ -n "$date_cols" ]] && in_csv_list "$col" "$date_cols"; then
+    if [[ -n "$date_cols" ]] && in_list "$col" "$date_cols"; then
       local uvar="@${col}_raw"
       load_list+="${load_list:+, }${uvar}"
-      # ajoute l'expression SET pour cette colonne
-      local expr
-      expr="$(sql_from_now_token "$uvar")"
-      set_parts+=("${col} = ${expr}")
+      set_parts+=("${col} = $(sql_from_now_token "$uvar")")
     else
       load_list+="${load_list:+, }${col}"
     fi
@@ -125,8 +180,8 @@ load_csv() {
   # Si la table a date_mod/date_creation ET qu'elles ne sont pas déjà alimentées par le CSV,
   # on les remplit à NOW()
   if has_column "$table" "date_mod" && has_column "$table" "date_creation"; then
-    in_csv_list "date_mod" "$columns"  || set_parts+=("date_mod = NOW()")
-    in_csv_list "date_creation" "$columns" || set_parts+=("date_creation = NOW()")
+    in_list "date_mod" "$columns"  || set_parts+=("date_mod = NOW()")
+    in_list "date_creation" "$columns" || set_parts+=("date_creation = NOW()")
   fi
 
   local set_clause=""
@@ -135,273 +190,222 @@ load_csv() {
     set_clause="SET ${set_parts[*]}"
   fi
 
-  echo ">> TRUNCATE ${table}"
-  mysql_exec "SET FOREIGN_KEY_CHECKS=0; TRUNCATE \`${table}\`; SET FOREIGN_KEY_CHECKS=1;"
+  cat >>"$SQL_FILE" <<EOF
+CREATE TEMPORARY TABLE \`imp_${table}\` LIKE \`${table}\`;
+LOAD DATA LOCAL INFILE '${file}'
+  INTO TABLE \`imp_${table}\`
+  CHARACTER SET utf8mb4
+  FIELDS TERMINATED BY ',' ENCLOSED BY '"' ESCAPED BY '\\\\'
+  LINES TERMINATED BY '\n'
+  IGNORE 1 LINES
+  (${load_list})
+  ${set_clause};
 
-  echo ">> LOAD DATA -> ${table}"
-  mysql_exec "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
-    LOAD DATA LOCAL INFILE '${tmp}'
-    INTO TABLE \`${table}\`
-    CHARACTER SET utf8mb4
-    FIELDS TERMINATED BY ',' ENCLOSED BY '\"' ESCAPED BY '\\\\'
-    LINES TERMINATED BY '\n'
-    IGNORE 1 LINES
-    (${load_list})
-    ${set_clause};"
-
-  echo "OK: ${table} importée."
+EOF
+  STAGED+=" ${table}"
 }
 
-load_document(){
+# Recopie une colonne de référence vers ses nouveaux identifiants (en deux
+# temps, pour ne jamais heurter une clé unique au passage). Une référence
+# vers une ligne absente du jeu est remise à 0.
+#   translate_col TABLE COLONNE TABLE_VISEE [CONDITION_SQL]
+translate_col() {
+  local t="$1" col="$2" ref="$3" cond="${4:-}"
+  local and="${cond:+ AND $cond}" sand="${cond:+ AND s.$cond}"
+  cat <<EOF
+UPDATE \`imp_$t\` SET $col = $col + 1000000000 WHERE $col > 0$and ORDER BY $col DESC;
+UPDATE \`imp_$t\` s JOIN imp_map m ON m.tbl = '$ref' AND m.old_id + 1000000000 = s.$col
+  SET s.$col = m.new_id WHERE s.$col >= 1000000000$sand;
+UPDATE \`imp_$t\` SET $col = 0 WHERE $col >= 1000000000$and;
+EOF
+}
+
+# Écrit sur la sortie standard le SQL qui verse les tables imp_* dans les
+# vraies tables. Arguments : les tables chargées.
+emit_merge() {
+  local staged=" $* " t col ref pt
+  is_staged() { [[ "$staged" == *" $1 "* ]]; }
+
+  echo "-- ===== Fusion avec les données existantes ====="
+  echo "CREATE TEMPORARY TABLE imp_map (tbl VARCHAR(64) NOT NULL, old_id INT UNSIGNED NOT NULL,"
+  echo "  new_id INT UNSIGNED NOT NULL, is_new TINYINT NOT NULL, PRIMARY KEY (tbl, old_id));"
+
+  # Nettoyage : espaces parasites des CSV, itemtype en minuscules, niveau des statuts
+  for t in $*; do
+    in_list "$t" "$DROPDOWNS" && echo "UPDATE \`imp_$t\` SET name = TRIM(name);"
+    in_list "$t" "$POLY" && echo "UPDATE \`imp_$t\` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));"
+  done
+  is_staged glpi_states && echo "UPDATE imp_glpi_states SET completename = TRIM(completename), level = 1 WHERE states_id = 0;"
+
+  # Refus d'un second import
+  if is_staged glpi_computers; then
+    cat <<'EOF'
+DELIMITER //
+BEGIN NOT ATOMIC
+  IF EXISTS (SELECT 1 FROM glpi_computers c JOIN imp_glpi_computers s
+             ON s.serial = c.serial WHERE c.serial <> '') THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Inventaire déjà importé : ces numéros de série sont déjà dans glpi_computers. Rien n''a été modifié.';
+  END IF;
+END //
+DELIMITER ;
+EOF
+  fi
+
+  echo "START TRANSACTION;"
+
+  # Correspondance ancien id -> nouvel id, table par table
+  for t in $*; do
+    echo "SET @base = (SELECT COALESCE(MAX(id), 0) FROM \`$t\`);"
+    if in_list "$t" "$DROPDOWNS"; then
+      echo "INSERT INTO imp_map SELECT '$t', s.id, MIN(d.id), 0 FROM \`imp_$t\` s JOIN \`$t\` d ON d.name = s.name GROUP BY s.id;"
+      echo "INSERT INTO imp_map SELECT '$t', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM \`imp_$t\` s LEFT JOIN \`$t\` d ON d.name = s.name WHERE d.id IS NULL;"
+    else
+      # Décalage simple : sur une base vide, les id du CSV sont conservés
+      echo "INSERT INTO imp_map SELECT '$t', s.id, @base + s.id, 1 FROM \`imp_$t\` s;"
+    fi
+  done
+
+  # Les références suivent
+  while read -r t col ref; do
+    is_staged "$t" && is_staged "$ref" && translate_col "$t" "$col" "$ref"
+  done <<<"$FKS"
+  for t in $*; do
+    in_list "$t" "$POLY" || continue
+    for pt in $POLY_TYPES; do
+      is_staged "${pt#*:}" && translate_col "$t" items_id "${pt#*:}" "itemtype = '${pt%%:*}'"
+    done
+  done
+
+  # Les lignes prennent leur nouvel id, puis seules les nouvelles sont versées
+  for t in $*; do
+    echo "UPDATE \`imp_$t\` SET id = id + 1000000000 ORDER BY id DESC;"
+    echo "UPDATE \`imp_$t\` s JOIN imp_map m ON m.tbl = '$t' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;"
+    echo "INSERT INTO \`$t\` SELECT s.* FROM \`imp_$t\` s JOIN imp_map m ON m.tbl = '$t' AND m.new_id = s.id AND m.is_new = 1;"
+  done
+
+  # Un statut n'est proposé dans les listes que pour les types où il est visible
+  if is_staged glpi_states; then
+    echo "INSERT INTO glpi_dropdownvisibilities (itemtype, items_id, visible_itemtype, is_visible)"
+    echo "  SELECT 'State', m.new_id, v.t, 1 FROM imp_map m JOIN ("
+    local first=1
+    for pt in $STATE_TYPES; do
+      ((first)) && echo "    SELECT '$pt' AS t" || echo "    UNION ALL SELECT '$pt'"
+      first=0
+    done
+    echo "  ) v WHERE m.tbl = 'glpi_states' AND m.is_new = 1;"
+  fi
+
+  echo "COMMIT;"
+  echo "SELECT tbl AS 'table', SUM(is_new) AS ajoutees, SUM(1 - is_new) AS reprises FROM imp_map GROUP BY tbl;"
+}
+
+# Récupère un PDF, l'ajoute au CSV des documents et à la liste à copier
+DOCS_CSV="$WORKDIR/glpi_documents.csv"
+DOCS_TO_COPY=()
+fetch_document() {
   local document="$1"
   local id="$2"
   local category_id="$3"
+  local tmp="$WORKDIR/pdf/${document}.pdf"
 
-  local url="https://github.com/eric-maletras/bloc1-glpi/raw/main/pdf/$1.pdf"
-  local tmp="$WORKDIR/${document}.pdf"
+  fetch_file "pdf/${document}.pdf" "$tmp"
 
-  rm -f  "$tmp"
-  fetch_csv "$url" "$tmp"
+  # Rangement de GLPI : PDF/<2 premiers caractères du SHA1>/<reste>.PDF
+  local sha1 filepath
+  sha1="$(sha1sum "$tmp" | awk '{print $1}')"
+  filepath="PDF/${sha1:0:2}/${sha1:2}.PDF"
 
-  local NOW_TS="$(date '+%Y-%m-%d %H:%M:%S')"
-#  local extra_set="SET date_mod='${NOW_TS}', date_creation='${NOW_TS}'"
+  echo "${id},\"${document}\",\"${document}.pdf\",\"${filepath}\",${category_id},application/pdf,${sha1}" >>"$DOCS_CSV"
+  DOCS_TO_COPY+=("$tmp|$filepath")
+}
 
-  local SHA1="$(sha1sum $tmp | awk '{print $1}')"
-  local PREFIX="${SHA1:0:2}"
+# Charge un CSV du dépôt en table temporaire
+load_csv() {
+  local table="$1"
+  fetch_file "csv/${table}.csv" "$WORKDIR/${table}.csv"
+  stage_csv "$table" "$WORKDIR/${table}.csv" "${@:2}"
+}
 
-  rm -rf "/var/www/glpi/files/PDF/$PREFIX"
-  mkdir "/var/www/glpi/files/PDF/$PREFIX"
-  local filepath="PDF/$PREFIX/$document.pdf"
+main() {
+  [[ $EUID -eq 0 ]] || { echo "!! À lancer avec sudo : le script dépose les PDF dans les données de GLPI." >&2; exit 1; }
 
-  mv "$tmp" "/var/www/glpi/files/$filepath"
+  if [[ -z "${GLPI_FILES:-}" ]]; then
+    if [[ -d /var/lib/glpi/_cache ]]; then GLPI_FILES=/var/lib/glpi; else GLPI_FILES=/var/www/glpi/files; fi
+  fi
+  [[ -d "$GLPI_FILES/_cache" ]] || { echo "!! Dossier de données de GLPI introuvable : $GLPI_FILES (le préciser avec GLPI_FILES=...)" >&2; exit 1; }
+  echo ">> Données de GLPI : $GLPI_FILES"
 
-  mysql_exec "
-    INSERT INTO glpi_documents
-      (entities_id, is_recursive, name, filename, filepath,documentcategories_id,mime,date_mod,sha1sum,date_creation)
-    VALUES
-      (0, 0,'${document}','${document}.pdf','${filepath}',${category_id},'application/pdf','${NOW_TS}','${SHA1}','${NOW_TS}');
-     "
+  rm -rf "$WORKDIR"
+  mkdir -p "$WORKDIR"
+  : >"$SQL_FILE"
 
-  echo "OK: ${document} -> ${filepath}"
-  echo "SHA1: ${SHA1}"
+  ############################################
 
-} #load_document
+  load_csv glpi_states "id, name, completename"
+  load_csv glpi_computertypes "id, name"
+  load_csv glpi_computermodels "id, name"
+  load_csv glpi_manufacturers "id, name"
+  load_csv glpi_operatingsystems "id, name, comment"
+  load_csv glpi_operatingsystemkernels "id, name"
+  load_csv glpi_operatingsystemkernelversions "id, operatingsystemkernels_id, name, comment"
+  load_csv glpi_computers "id, name, serial, computermodels_id, computertypes_id, manufacturers_id, states_id, uuid"
+  load_csv glpi_items_operatingsystems "id, items_id, itemtype, operatingsystems_id, operatingsystemkernelversions_id"
+  load_csv glpi_devicefirmwaretypes "id, name, comment"
+  load_csv glpi_devicefirmwares "id, designation, manufacturers_id, version, devicefirmwaretypes_id"
+  load_csv glpi_items_devicefirmwares "id, items_id, itemtype, devicefirmwares_id"
+  load_csv glpi_items_disks "id, itemtype, items_id, name, device, mountpoint, filesystems_id, totalsize, freesize"
+  load_csv glpi_devicememorytypes "id, name"
+  load_csv glpi_devicememories "id, designation, frequence, devicememorytypes_id"
+  load_csv glpi_items_devicememories "id, items_id, itemtype, devicememories_id, size, busID"
+  load_csv glpi_deviceprocessors "id, designation, frequence, manufacturers_id, frequency_default, nbcores_default, nbthreads_default"
+  load_csv glpi_items_deviceprocessors "id, items_id, itemtype, deviceprocessors_id, frequency, nbcores, nbthreads"
+  load_csv glpi_deviceharddrives "id, designation, interfacetypes_id, manufacturers_id"
+  load_csv glpi_items_deviceharddrives "id, items_id, itemtype, deviceharddrives_id, capacity"
+  load_csv glpi_devicenetworkcards "id, designation"
+  load_csv glpi_items_devicenetworkcards "id, items_id, itemtype, devicenetworkcards_id, mac"
+  load_csv glpi_networkports "id, items_id, itemtype, logical_number, name, instantiation_type, mac"
+  load_csv glpi_suppliertypes "id, name"
+  load_csv glpi_suppliers "id, entities_id, is_recursive, name, suppliertypes_id, registration_number, address, postcode, town, state, country, website, phonenumber, comment, is_deleted, fax, email, is_active, pictures"
+  load_csv glpi_documentcategories "id, name, documentcategories_id, completename, level, ancestors_cache"
 
-############################################
+  # Devis (catégorie 1) et factures (catégorie 2)
+  echo "id,name,filename,filepath,documentcategories_id,mime,sha1sum" >"$DOCS_CSV"
+  fetch_document devis_grosbill 1 1
+  fetch_document devis_ldlc_pro 2 1
+  fetch_document devis_materiel.net 3 1
+  fetch_document facture_grosbill 4 2
+  fetch_document facture_ldlc_pro 5 2
+  fetch_document facture_materiel.net 6 2
+  stage_csv glpi_documents "$DOCS_CSV" "id, name, filename, filepath, documentcategories_id, mime, sha1sum"
 
-# 1) glpi_states (pas de dates dans le CSV -> la fonction détecte que la table n’a pas date_mod/date_creation)
-echo glpi_states
-load_csv \
-  "glpi_states" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_states.csv" \
-  "id, name, completename"
+  load_csv glpi_documents_items "id, documents_id, items_id, itemtype"
+  load_csv glpi_infocoms \
+    "itemtype, items_id, suppliers_id, order_number, bill, value, sink_type, sink_time, sink_coeff, warranty_duration, buy_date, use_date, order_date, delivery_date, warranty_date" \
+    "buy_date, use_date, order_date, delivery_date, warranty_date"
 
-# 2) glpi_computertypes (CSV: id,name ; la table a date_mod/date_creation -> auto-ajout)
-echo glpi_computertypes
-load_csv \
-  "glpi_computertypes" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_computertypes.csv" \
-  "id, name"
+  #######################################################################################
 
-# 3) glpi_computermodels (CSV: id,name ; idem, dates auto-ajoutées)
-echo glpi_computermodels
-load_csv \
-  "glpi_computermodels" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_computermodels.csv" \
-  "id, name"
+  emit_merge $STAGED >>"$SQL_FILE"
 
-# 4) glpi_manufacturers (id,name ; dates ajoutées automatiquement si colonnes présentes)
+  echo ">> Import dans la base ${DB_NAME}"
+  [[ -n "${DB_PASS}" ]] && export MYSQL_PWD="${DB_PASS}" || true
+  mysql -h "$DB_HOST" -u "$DB_USER" $MYSQL_OPTS "$DB_NAME" <"$SQL_FILE"
 
-load_csv \
-  "glpi_manufacturers" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_manufacturers.csv" \
-  "id, name"
+  # Les fichiers des documents, à la place que GLPI leur attend
+  local item src filepath
+  for item in "${DOCS_TO_COPY[@]}"; do
+    src="${item%%|*}"
+    filepath="${item#*|}"
+    install -d -o "$WEB_USER" -g "$WEB_USER" "$GLPI_FILES/PDF" "$GLPI_FILES/$(dirname "$filepath")"
+    install -o "$WEB_USER" -g "$WEB_USER" -m 644 "$src" "$GLPI_FILES/$filepath"
+    echo "OK: $(basename "$src") -> $GLPI_FILES/$filepath"
+  done
 
-load_csv \
-  "glpi_operatingsystems" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_operatingsystems.csv" \
-  "id, name, comment"
+  echo "Import terminé."
+}
 
-#glpi_operatingsystemkernels
-load_csv \
-  "glpi_operatingsystemkernels" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_operatingsystemkernels.csv" \
-  "id, name"
-
-
-#glpi_operatingsystemkernelversions
-load_csv \
-  "glpi_operatingsystemkernelversions" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_operatingsystemkernelversions.csv" \
-  "id, operatingsystemkernels_id, name, comment"
-
-#glpi_computers
-load_csv \
-  "glpi_computers" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_computers.csv" \
-  "id,NAME,serial,computermodels_ID,computerTypes_ID,manufacturers_ID,States_ID,UUID"
-
-# glpi_items_operatingsystems
-load_csv \
-  "glpi_items_operatingsystems" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_items_operatingsystems.csv" \
-  "id,items_id,itemtype,operatingsystems_id,operatingsystemkernelversions_id"
-
-# glpi_devicefirmwaretypes
-load_csv \
-  "glpi_devicefirmwaretypes" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_devicefirmwaretypes.csv" \
-  "id, name, comment"
-
-# glpi_devicefirmwares
-load_csv \
-  "glpi_devicefirmwares" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_devicefirmwares.csv" \
-  "id, designation, manufacturers_id, version, devicefirmwaretypes_id"
-
-# glpi_items_devicefirmwares
-load_csv \
-  "glpi_items_devicefirmwares" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_items_devicefirmwares.csv" \
-  "id, items_id, itemtype, devicefirmwares_id"
-
-# glpi_items_disks
-load_csv \
-  "glpi_items_disks" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_items_disks.csv" \
-  "id, itemtype, items_id, name, device, mountpoint, filesystems_id, totalsize, freesize"
-
-# glpi_devicememorytypes
-load_csv \
-  "glpi_devicememorytypes" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_devicememorytypes.csv" \
-  "id, name"
-
-
-# glpi_devicememories
-load_csv \
-  "glpi_devicememories" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_devicememories.csv" \
-  "id, designation, frequence, devicememorytypes_id"
-
-# glpi_items_devicememories
-load_csv \
-  "glpi_items_devicememories" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_items_devicememories.csv" \
-  "id, items_id, itemtype, devicememories_id, size, BusID"
-
-# glpi_deviceprocessors
-load_csv \
-  "glpi_deviceprocessors" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_deviceprocessors.csv" \
-  "id, designation, frequence , manufacturers_id, frequency_default, nbcores_default, nbthreads_default"
-
-# glpi_items_deviceprocessors
-load_csv \
-  "glpi_items_deviceprocessors" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_items_deviceprocessors.csv" \
-  "id, items_id,itemtype,deviceprocessors_id,frequency,nbcores,nbthreads"
-
-# glpi_deviceharddrives
-load_csv \
-  "glpi_deviceharddrives" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_deviceharddrives.csv" \
-  "id,designation,interfacetypes_id,manufacturers_id"
-
-# glpi_items_deviceharddrives
-load_csv \
-  "glpi_items_deviceharddrives" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_items_deviceharddrives.csv" \
-  "id, items_id, itemtype, deviceharddrives_id, capacity"
-
-# glpi_devicenetworkcards
-load_csv \
-  "glpi_devicenetworkcards" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_devicenetworkcards.csv" \
-  "id, designation"
-
-# glpi_items_devicenetworkcards
-load_csv \
-  "glpi_items_devicenetworkcards" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_items_devicenetworkcards.csv" \
-  "id,items_id, itemtype, devicenetworkcards_id, mac"
-
-# glpi_networkports
-load_csv \
-  "glpi_networkports" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_networkports.csv" \
-  "id, items_id, itemtype, logical_number, name, instantiation_type, mac"
-
-# glpi_suppliertypes
-load_csv \
-  "glpi_suppliertypes" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_suppliertypes.csv" \
-  "id,name"
-
-# glpi_suppliers
-load_csv \
-  "glpi_suppliers" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_suppliers.csv" \
-  "id, entities_id, is_recursive, name, suppliertypes_id, registration_number, address, postcode, town, state, country,website, phonenumber, comment, is_deleted, fax, email,is_active, pictures"
-
-# glpi_documentcategories
-load_csv \
-  "glpi_documentcategories" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_documentcategories.csv" \
-  "id,name,documentcategories_id,completename,level,ancestors_cache"
-
-
-#######################################################################################
-
-mysql_exec "TRUNCATE glpi_documents;"
-rm -rf /var/www/glpi/files/PDF/*
-
-# document devis grosbill
-load_document \
-  "devis_grosbill" \
-  1 \
-  1
-
-# devis_ldlc_pro.pdf
-load_document \
-  "devis_ldlc_pro" \
-  2 \
-  1
-
-# devis_materiel.net.pdf
-load_document \
-  "devis_materiel.net" \
-  3 \
-  1
-
-# facture_grosbill.pdf
-load_document \
-  "facture_grosbill" \
-  4 \
-  2
-
-# facture_ldlc_pro.pdf
-load_document \
-  "facture_ldlc_pro" \
-  5 \
-  2
-
-# facture_materiel.net.pdf
-load_document \
-  "facture_materiel.net" \
-  6 \
-  2
-#glpi_documents_items
-load_csv \
-  "glpi_documents_items" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_documents_items.csv" \
-  "id,documents_id,items_id,itemtype,date"
-
-# glpi_infocoms
-load_csv \
-  "glpi_infocoms" \
-  "https://raw.githubusercontent.com/eric-maletras/bloc1-glpi/refs/heads/main/csv/glpi_infocoms.csv" \
-  "itemtype,items_id,suppliers_id,order_number,bill,value,sink_type,sink_time,sink_coeff,warranty_duration,buy_date,use_date,order_date,delivery_date,warranty_date" \
-  "buy_date,use_date,order_date,delivery_date,warranty_date"
-
-echo "Import terminé."
+# Lancé directement : import ; chargé par « source » : fonctions seules
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

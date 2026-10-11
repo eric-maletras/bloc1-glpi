@@ -1,20 +1,53 @@
+-- Jeu d'inventaire M2L (360 PC et leurs composants), en SQL pur.
+-- Vérifié sur le schéma de GLPI 12.0.0.
+--
+--   sudo mysql glpi < inventaire-PC
+--
+-- Les données AJOUTENT à l'existant, rien n'est vidé : elles passent par des
+-- tables temporaires imp_*, puis les identifiants sont décalés au-delà des
+-- plus grands id existants (inchangés sur une base vide) et les listes
+-- (statuts, fabricants, types, modèles, systèmes...) sont fusionnées par nom.
+-- Une seule transaction ; un second passage est refusé.
+-- Bloc de fusion généré par import-sql.sh (fonction emit_merge).
 
-TRUNCATE `glpi_states`;
-INSERT INTO `glpi_states` (id, name, completename) VALUES
+CREATE TEMPORARY TABLE `imp_glpi_states` LIKE `glpi_states`;
+CREATE TEMPORARY TABLE `imp_glpi_computertypes` LIKE `glpi_computertypes`;
+CREATE TEMPORARY TABLE `imp_glpi_computermodels` LIKE `glpi_computermodels`;
+CREATE TEMPORARY TABLE `imp_glpi_manufacturers` LIKE `glpi_manufacturers`;
+CREATE TEMPORARY TABLE `imp_glpi_operatingsystems` LIKE `glpi_operatingsystems`;
+CREATE TEMPORARY TABLE `imp_glpi_operatingsystemkernels` LIKE `glpi_operatingsystemkernels`;
+CREATE TEMPORARY TABLE `imp_glpi_operatingsystemkernelversions` LIKE `glpi_operatingsystemkernelversions`;
+CREATE TEMPORARY TABLE `imp_glpi_computers` LIKE `glpi_computers`;
+CREATE TEMPORARY TABLE `imp_glpi_items_operatingsystems` LIKE `glpi_items_operatingsystems`;
+CREATE TEMPORARY TABLE `imp_glpi_devicefirmwaretypes` LIKE `glpi_devicefirmwaretypes`;
+CREATE TEMPORARY TABLE `imp_glpi_devicefirmwares` LIKE `glpi_devicefirmwares`;
+CREATE TEMPORARY TABLE `imp_glpi_items_devicefirmwares` LIKE `glpi_items_devicefirmwares`;
+CREATE TEMPORARY TABLE `imp_glpi_items_disks` LIKE `glpi_items_disks`;
+CREATE TEMPORARY TABLE `imp_glpi_devicememorytypes` LIKE `glpi_devicememorytypes`;
+CREATE TEMPORARY TABLE `imp_glpi_devicememories` LIKE `glpi_devicememories`;
+CREATE TEMPORARY TABLE `imp_glpi_items_devicememories` LIKE `glpi_items_devicememories`;
+CREATE TEMPORARY TABLE `imp_glpi_deviceprocessors` LIKE `glpi_deviceprocessors`;
+CREATE TEMPORARY TABLE `imp_glpi_items_deviceprocessors` LIKE `glpi_items_deviceprocessors`;
+CREATE TEMPORARY TABLE `imp_glpi_deviceharddrives` LIKE `glpi_deviceharddrives`;
+CREATE TEMPORARY TABLE `imp_glpi_items_deviceharddrives` LIKE `glpi_items_deviceharddrives`;
+CREATE TEMPORARY TABLE `imp_glpi_devicenetworkcards` LIKE `glpi_devicenetworkcards`;
+CREATE TEMPORARY TABLE `imp_glpi_items_devicenetworkcards` LIKE `glpi_items_devicenetworkcards`;
+CREATE TEMPORARY TABLE `imp_glpi_networkports` LIKE `glpi_networkports`;
+
+
+INSERT INTO `imp_glpi_states` (id, name, completename) VALUES
 (1, "En Service", "En Service"),
 (2, "Détruit", "Détruit"),
 (3, "Réparation", "Réparation");
 
-TRUNCATE glpi_computertypes;
-INSERT INTO `glpi_computertypes` (`ID`, `name`, `date_mod`, `date_creation`) VALUES 
+INSERT INTO `imp_glpi_computertypes` (`ID`, `name`, `date_mod`, `date_creation`) VALUES 
 (1, "Autres", now(), now()), 
 (2, "AT/AT COMPATIBLE", now(), now()), 
 (3, "Desktop", now(), now()), 
 (4,"Low Profile Desktop", now(), now()), 
 (5,"Mini Tower", now(), now()); 
 
-TRUNCATE glpi_computermodels;
-INSERT INTO glpi_computermodels (id, name,date_mod,date_creation) VALUES 
+INSERT INTO `imp_glpi_computermodels` (id, name,date_mod,date_creation) VALUES 
 (1,"Autres",now(),now()),
 (2,"G5215fr",now(),now()), 
 (3,"HP Compaq 6005 Pro SFF PC",now(),now()), 
@@ -32,8 +65,7 @@ INSERT INTO glpi_computermodels (id, name,date_mod,date_creation) VALUES
 (15,"System Product Name",now(),now()), 
 (16,"Vostro 260",now(),now()); 
 
-TRUNCATE glpi_manufacturers;
-INSERT INTO `glpi_manufacturers` (id, name,date_mod,date_creation) VALUES
+INSERT INTO `imp_glpi_manufacturers` (id, name,date_mod,date_creation) VALUES
 (1,"Autres",now(),now()),
 (2,"Dell Inc.",now(),now()),
 (3,"Hewlett-Packard",now(),now()),
@@ -43,8 +75,7 @@ INSERT INTO `glpi_manufacturers` (id, name,date_mod,date_creation) VALUES
 (7,"Intel(R) Corporation",now(),now()),
 (8,"(Lecteurs de disque standard)",now(),now());
 
-TRUNCATE glpi_operatingsystems;
-INSERT INTO glpi_operatingsystems (`name`, `DATE_MOD`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_operatingsystems` (`name`, `DATE_MOD`, `date_creation`) VALUES
 ('Debian GNU/Linux 7.2', '2023-10-03 10:09:28', '2023-10-03 10:09:28'),
 ('Debian GNU/Linux 7.7 (wheezy)', '2023-10-03 10:09:28', '2023-10-03 10:09:28'),
 ('Debian GNU/Linux wheezy/sid', '2023-10-03 10:09:28', '2023-10-03 10:09:28'),
@@ -54,13 +85,11 @@ INSERT INTO glpi_operatingsystems (`name`, `DATE_MOD`, `date_creation`) VALUES
 ('Microsoft Windows 7 Édition Familiale Premium', '2023-10-03 10:09:28', '2023-10-03 10:09:28');
 
 
-TRUNCATE glpi_operatingsystemkernels;
-INSERT INTO glpi_operatingsystemkernels (id, name, date_mod, date_creation) VALUES
+INSERT INTO `imp_glpi_operatingsystemkernels` (id, name, date_mod, date_creation) VALUES
 (1, "linux", DATE_ADD(now(), INTERVAL - 3 YEAR), DATE_ADD(now(), INTERVAL - 3 YEAR)),
 (2, "MSWin32", DATE_ADD(now(), INTERVAL - 3 YEAR), DATE_ADD(now(), INTERVAL - 3 YEAR));
 
-TRUNCATE glpi_operatingsystemkernelversions;
-INSERT INTO glpi_operatingsystemkernelversions (`operatingsystemkernels_id`, `name`, `comment`, `date_mod`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_operatingsystemkernelversions` (`operatingsystemkernels_id`, `name`, `comment`, `date_mod`, `date_creation`) VALUES
 (2, "5.1.2600", "Service Pack 3", '2020-10-03 14:58:09', '2020-10-03 14:58:09'),
 (2, "5.1.2600", "Service Pack 3 (Terminal Services in Remote Admin Mode)", '2020-10-03 14:58:09', '2020-10-03 14:58:09'),
 (2, "6.1.7601", "Service Pack 1", '2020-10-03 14:58:09', '2020-10-03 14:58:09'),
@@ -70,7 +99,7 @@ INSERT INTO glpi_operatingsystemkernelversions (`operatingsystemkernels_id`, `na
 (1, "2.6.32-30-pve", "#1 SMP Wed Jun 25 05:54:15 CEST 2014", '2020-10-03 14:58:09', '2020-10-03 14:58:09');
 
 
-INSERT INTO glpi_computers (id,NAME,serial,computermodels_ID,computerTypes_ID,manufacturers_ID,States_ID,UUID) VALUES  
+INSERT INTO `imp_glpi_computers` (id,NAME,serial,computermodels_ID,computerTypes_ID,manufacturers_ID,States_ID,UUID) VALUES  
 (2,"109-05","CZC2361LL8",4,5,3,1,"109-05-2012-10-16-13-40-16"),
 (4,"109-08","CZC2361LKR",4,5,3,1,"109-08-2012-10-19-08-37-35"),
 (5,"109-10","CZC2361LKM",4,5,3,1,"109-10-2012-10-16-13-52-04"),
@@ -433,8 +462,7 @@ INSERT INTO glpi_computers (id,NAME,serial,computermodels_ID,computerTypes_ID,ma
 (1099,"servDevWeb",NULL,1,1,1,1,"servDevWeb-2014-10-25-14-26-04");
 
 
-TRUNCATE glpi_items_operatingsystems;
-INSERT INTO glpi_items_operatingsystems (items_id,itemtype,operatingsystems_id,operatingsystemkernelversions_id,date_mod,date_creation) VALUES
+INSERT INTO `imp_glpi_items_operatingsystems` (items_id,itemtype,operatingsystems_id,operatingsystemkernelversions_id,date_mod,date_creation) VALUES
 (2,"computer",4,3,"2020-10-03 17:55:57","2020-10-03 17:55:57"),
 (4,"computer",4,3,"2020-10-03 17:55:57","2020-10-03 17:55:57"),
 (5,"computer",4,3,"2020-10-03 17:55:57","2020-10-03 17:55:57"),
@@ -796,13 +824,12 @@ INSERT INTO glpi_items_operatingsystems (items_id,itemtype,operatingsystems_id,o
 (1098,"computer",3,7,"2020-10-03 17:55:57","2020-10-03 17:55:57"),
 (1099,"computer",3,7,"2020-10-03 17:55:57","2020-10-03 17:55:57");
 
-TRUNCATE glpi_devicefirmwaretypes;
-INSERT INTO `glpi_devicefirmwaretypes` (`id`, `name`, `comment`, `date_mod`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_devicefirmwaretypes` (`id`, `name`, `comment`, `date_mod`, `date_creation`) VALUES
 (1, 'BIOS', NULL, NULL, NULL),
 (2, 'UEFI', NULL, NULL, NULL),
 (3, 'Firmware', NULL, NULL, NULL);
 
-INSERT INTO `glpi_devicefirmwares` (`designation`, `manufacturers_id`, `version`, `devicefirmwaretypes_id`, `DATE_MOD`, `DATE_CREATION`) VALUES
+INSERT INTO `imp_glpi_devicefirmwares` (`designation`, `manufacturers_id`, `version`, `devicefirmwaretypes_id`, `DATE_MOD`, `DATE_CREATION`) VALUES
 ('HPQOEM - 1072009- ', 3,  ' J01 v02.15', 1, '2020-10-04 07:08:23', '2020-10-04 07:08:23'),
 ('HPQOEM - 20080409- ', 3,  ' 786F6 v01.09', 1, '2020-10-04 07:08:23', '2020-10-04 07:08:23'),
 ('HPQOEM - 20070125- ', 3,  ' 786E3 v02.10', 1, '2020-10-04 07:08:23', '2020-10-04 07:08:23'),
@@ -821,8 +848,7 @@ INSERT INTO `glpi_devicefirmwares` (`designation`, `manufacturers_id`, `version`
 ('HPQOEM - 20110208;BIOS Date: 02/08/11 15:28:55 Ver: 6.14 - ', 4,  ' 6.14', 1, '2020-10-04 07:08:23', '2020-10-04 07:08:23'),
 ('HPQOEM - 20100908;BIOS Date: 09/08/10 14:17:58 Ver: 6.13 - ', 4,  ' 6.13', 1, '2020-10-04 07:08:23', '2020-10-04 07:08:23');
 
-TRUNCATE glpi_items_devicefirmwares;
-INSERT INTO `glpi_items_devicefirmwares` (`items_id`, `itemtype`, `devicefirmwares_id`) VALUES
+INSERT INTO `imp_glpi_items_devicefirmwares` (`items_id`, `itemtype`, `devicefirmwares_id`) VALUES
 (2, 'computer', 1),
 (4, 'computer', 1),
 (5, 'computer', 1),
@@ -1156,8 +1182,7 @@ INSERT INTO `glpi_items_devicefirmwares` (`items_id`, `itemtype`, `devicefirmwar
 (1091, 'computer', 1),
 (1093, 'computer', 13);
 
-TRUNCATE `glpi_items_disks`;
-INSERT INTO `glpi_items_disks` (`itemtype`, `items_id`, `name`, `device`, `mountpoint`, `filesystems_id`, `totalsize`, `freesize`, `date_mod`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_items_disks` (`itemtype`, `items_id`, `name`, `device`, `mountpoint`, `filesystems_id`, `totalsize`, `freesize`, `date_mod`, `date_creation`) VALUES
 ('computer', 2, 'OS', 'OS', 'C:/', '14', 229688, 192555, '2020-10-05 09:48:52', '2020-10-05 09:48:52'),
 ('computer', 2, 'HP_RECOVERY', 'HP_RECOVERY', 'D:/', '14', 8683, 1060, '2020-10-05 09:48:52', '2020-10-05 09:48:52'),
 ('computer', 2, 'E:/', '', 'E:/', '0', 0, 0, '2020-10-05 09:48:52', '2020-10-05 09:48:52'),
@@ -1664,7 +1689,7 @@ INSERT INTO `glpi_items_disks` (`itemtype`, `items_id`, `name`, `device`, `mount
 ('computer', 428, 'D:/', '', 'D:/', '0', 0, 0, '2020-10-05 09:48:52', '2020-10-05 09:48:52'),
 ('computer', 445, 'C:/', '', 'C:/', '14', 76308, 48943, '2020-10-05 09:48:52', '2020-10-05 09:48:52');
 
-INSERT INTO `glpi_items_disks` (`itemtype`, `items_id`, `name`, `device`, `mountpoint`, `filesystems_id`, `totalsize`, `freesize`, `date_mod`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_items_disks` (`itemtype`, `items_id`, `name`, `device`, `mountpoint`, `filesystems_id`, `totalsize`, `freesize`, `date_mod`, `date_creation`) VALUES
 ('computer', 445, 'D:/', '', 'D:/', '0', 0, 0, '2020-10-05 09:48:52', '2020-10-05 09:48:52'),
 ('computer', 446, 'C:/', '', 'C:/', '14', 76308, 51801, '2020-10-05 09:48:52', '2020-10-05 09:48:52'),
 ('computer', 446, 'D:/', '', 'D:/', '0', 0, 0, '2020-10-05 09:48:52', '2020-10-05 09:48:52'),
@@ -2166,9 +2191,9 @@ INSERT INTO `glpi_items_disks` (`itemtype`, `items_id`, `name`, `device`, `mount
 ('computer', 1099, '/dev/simfs', '/dev/simfs', '', '0', 20480, 19216, '2020-10-05 09:48:52', '2020-10-05 09:48:52');
 
 
-INSERT INTO `glpi_devicememorytypes` (`name`) VALUES ("Flash"), ("DDR2"), ('Unknown');
+INSERT INTO `imp_glpi_devicememorytypes` (`id`, `name`) VALUES (5, "Flash"), (6, "DDR2"), (7, 'Unknown');
 
-INSERT INTO `glpi_devicememories` (`designation`, `frequence`, `devicememorytypes_id`, `date_mod`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_devicememories` (`designation`, `frequence`, `devicememorytypes_id`, `date_mod`, `date_creation`) VALUES
 ('DIMM1 (No ECC)', '1333', 7, '2020-10-05 12:22:36', '2020-10-05 12:22:36'),
 ('XMM4 (No ECC)', '800', 7, '2020-10-05 12:22:36', '2020-10-05 12:22:36'),
 ('SYSTEM ROM (No ECC)', '', 5, '2020-10-05 12:22:36', '2020-10-05 12:22:36'),
@@ -2194,8 +2219,7 @@ INSERT INTO `glpi_devicememories` (`designation`, `frequence`, `devicememorytype
 ('XMM4 (No ECC)', '533', 7, '2020-10-05 12:22:36', '2020-10-05 12:22:36');
 
 
-TRUNCATE glpi_items_devicememories;
-INSERT INTO `glpi_items_devicememories` (`items_id`, `itemtype`, `devicememories_id`, `size`, `BusID`) VALUES
+INSERT INTO `imp_glpi_items_devicememories` (`items_id`, `itemtype`, `devicememories_id`, `size`, `BusID`) VALUES
 (2, 'computer', 1, '2048', 1),
 (4, 'computer', 1, '2048', 1),
 (5, 'computer', 1, '2048', 1),
@@ -2895,8 +2919,7 @@ INSERT INTO `glpi_items_devicememories` (`items_id`, `itemtype`, `devicememories
 (1093, 'computer', 11, '1024', 2),
 (1093, 'computer', 3, '4', 3);
 
-TRUNCATE glpi_deviceprocessors;
-INSERT INTO `glpi_deviceprocessors` (`id`,`designation`,`frequence`,`manufacturers_id`,`frequency_default`,`nbcores_default`,`nbthreads_default`) VALUES
+INSERT INTO `imp_glpi_deviceprocessors` (`id`,`designation`,`frequence`,`manufacturers_id`,`frequency_default`,`nbcores_default`,`nbthreads_default`) VALUES
 (1,"Intel(R) Pentium(R) D CPU 3.00GHz",3000,7,3000,2,2),
 (2,"Intel Corporation Intel(R) Pentium(R) D CPU 3.00GHz",3000,7,3000,2,2),
 (3,"Intel(R) Pentium(R) D CPU 2.80GHz",2800,7,2800,2,2),
@@ -2918,8 +2941,7 @@ INSERT INTO `glpi_deviceprocessors` (`id`,`designation`,`frequence`,`manufacture
 (19,"Dual-Core AMD Opteron(tm) Processor 2210",1800,6,1800,2,2),
 (20,"Dual-Core AMD Opteron(tm) Processor 2216",2400,6,1800,2,2);
 
-TRUNCATE glpi_items_deviceprocessors;
-INSERT INTO glpi_items_deviceprocessors (items_id,itemtype,deviceprocessors_id,frequency,nbcores,nbthreads)VALUES 
+INSERT INTO `imp_glpi_items_deviceprocessors` (items_id,itemtype,deviceprocessors_id,frequency,nbcores,nbthreads)VALUES 
 (658 ,"computer" ,1,3000 ,2,2),
 (663 ,"computer" ,1,3000 ,2,2),
 (652 ,"computer" ,2,3000 ,2,2),
@@ -3269,8 +3291,7 @@ INSERT INTO glpi_items_deviceprocessors (items_id,itemtype,deviceprocessors_id,f
 (191 ,"computer" ,3,2800 ,2,2),
 (285 ,"computer" ,3,2800 ,2,2);
 
-TRUNCATE glpi_deviceharddrives;
-INSERT INTO glpi_deviceharddrives (designation,interfacetypes_id,manufacturers_id,date_mod,date_creation) VALUES
+INSERT INTO `imp_glpi_deviceharddrives` (designation,interfacetypes_id,manufacturers_id,date_mod,date_creation) VALUES
 ("ST250DM000-1BD141", 2, 8, '2023-10-29 08:47:19', '2023-10-29 08:47:19'),
 ("WDC WD2500AAKX-753CA1 ATA Device", 2, 8, '2023-10-29 08:47:19', '2023-10-29 08:47:19'),
 ("WDC WD2500AAKX-603CA0", 2, 8, '2023-10-29 08:47:19', '2023-10-29 08:47:19'),
@@ -3285,7 +3306,7 @@ INSERT INTO glpi_deviceharddrives (designation,interfacetypes_id,manufacturers_i
 ("ST250DM000-1BD141 ATA Device", 2, 8, '2023-10-29 08:47:19', '2023-10-29 08:47:19'),
 ("WDC WD2500AAKX-603CA0 ATA Device", 2, 8, '2023-10-29 08:47:19', '2023-10-29 08:47:19');
 
-INSERT INTO `glpi_items_deviceharddrives` (`items_id`, `itemtype`, `deviceharddrives_id`, `capacity`) VALUES
+INSERT INTO `imp_glpi_items_deviceharddrives` (`items_id`, `itemtype`, `deviceharddrives_id`, `capacity`) VALUES
 (2, 'Computer', 1, 238472),
 (4, 'Computer', 1, 238472),
 (5, 'Computer', 1, 238472),
@@ -3434,7 +3455,7 @@ INSERT INTO `glpi_items_deviceharddrives` (`items_id`, `itemtype`, `deviceharddr
 (1090, 'Computer', 12, 238472),
 (1091, 'Computer', 12, 238472);
 
-INSERT INTO `glpi_devicenetworkcards` (`DESIGNATION`) VALUES
+INSERT INTO `imp_glpi_devicenetworkcards` (`DESIGNATION`) VALUES
 ("Intel(R) 82579LM Gigabit Network Connection"),
 ("Broadcom NetXtreme Gigabit Ethernet - Miniport d''ordonnancement de paquets"),
 ("Realtek PCIe GBE Family Controller"),
@@ -3448,7 +3469,7 @@ INSERT INTO `glpi_devicenetworkcards` (`DESIGNATION`) VALUES
 ("eth0"),
 ("eth1");
 
-INSERT INTO `glpi_items_devicenetworkcards` (`items_id`, `itemtype`, `devicenetworkcards_id`, `mac`) VALUES
+INSERT INTO `imp_glpi_items_devicenetworkcards` (`items_id`, `itemtype`, `devicenetworkcards_id`, `mac`) VALUES
 (2, 'computer', 1, '24:BE:05:18:35:75'),
 (4, 'computer', 1, '24:BE:05:20:51:CE'),
 (5, 'computer', 1, '24:BE:05:18:35:4E'),
@@ -3825,8 +3846,7 @@ INSERT INTO `glpi_items_devicenetworkcards` (`items_id`, `itemtype`, `devicenetw
 (1098, 'computer', 11, 'a2:91:d7:d0:d5:b6'),
 (1099, 'computer', 11, 'ba:b8:a1:ee:50:25');
 
-TRUNCATE glpi_networkports;
-INSERT INTO `glpi_networkports` (`items_id`, `itemtype`, `logical_number`, `name`, `instantiation_type`, `mac`, `date_mod`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_networkports` (`items_id`, `itemtype`, `logical_number`, `name`, `instantiation_type`, `mac`, `date_mod`, `date_creation`) VALUES
 (2, 'computer', 1, 'Intel(R) 82579LM Gigabit Network Connection', 'NetworkPortEthernet', '24:BE:05:18:35:75', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
 (4, 'computer', 1, 'Intel(R) 82579LM Gigabit Network Connection', 'NetworkPortEthernet', '24:BE:05:20:51:CE', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
 (5, 'computer', 1, 'Intel(R) 82579LM Gigabit Network Connection', 'NetworkPortEthernet', '24:BE:05:18:35:4E', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
@@ -4108,7 +4128,7 @@ INSERT INTO `glpi_networkports` (`items_id`, `itemtype`, `logical_number`, `name
 (611, 'computer', 1, 'NVIDIA nForce 10/100 Mbps Ethernet', 'NetworkPortEthernet', '70:71:BC:89:63:10', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
 (612, 'computer', 1, 'NVIDIA nForce 10/100 Mbps Ethernet', 'NetworkPortEthernet', '70:71:BC:89:64:5C', '2023-10-29 12:57:14', '2023-10-29 12:57:14');
 
-INSERT INTO `glpi_networkports` (`items_id`, `itemtype`, `logical_number`, `name`, `instantiation_type`, `mac`, `date_mod`, `date_creation`) VALUES
+INSERT INTO `imp_glpi_networkports` (`items_id`, `itemtype`, `logical_number`, `name`, `instantiation_type`, `mac`, `date_mod`, `date_creation`) VALUES
 (619, 'computer', 1, 'NVIDIA nForce 10/100 Mbps Ethernet', 'NetworkPortEthernet', '70:71:BC:89:68:31', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
 (620, 'computer', 1, 'NVIDIA nForce 10/100 Mbps Ethernet', 'NetworkPortEthernet', '70:71:BC:89:5F:03', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
 (625, 'computer', 1, 'Intel(R) 82579LM Gigabit Network Connection', 'NetworkPortEthernet', '74:46:A0:AF:8B:2D', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
@@ -4204,3 +4224,282 @@ INSERT INTO `glpi_networkports` (`items_id`, `itemtype`, `logical_number`, `name
 (1097, 'computer', 1, 'eth1', 'NetworkPortEthernet', 'ea:40:80:8f:1b:60', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
 (1098, 'computer', 1, 'eth0', 'NetworkPortEthernet', 'a2:91:d7:d0:d5:b6', '2023-10-29 12:57:14', '2023-10-29 12:57:14'),
 (1099, 'computer', 1, 'eth0', 'NetworkPortEthernet', 'ba:b8:a1:ee:50:25', '2023-10-29 12:57:14', '2023-10-29 12:57:14');
+
+-- ===== Fusion avec les données existantes =====
+CREATE TEMPORARY TABLE imp_map (tbl VARCHAR(64) NOT NULL, old_id INT UNSIGNED NOT NULL,
+  new_id INT UNSIGNED NOT NULL, is_new TINYINT NOT NULL, PRIMARY KEY (tbl, old_id));
+UPDATE `imp_glpi_states` SET name = TRIM(name);
+UPDATE `imp_glpi_computertypes` SET name = TRIM(name);
+UPDATE `imp_glpi_computermodels` SET name = TRIM(name);
+UPDATE `imp_glpi_manufacturers` SET name = TRIM(name);
+UPDATE `imp_glpi_operatingsystems` SET name = TRIM(name);
+UPDATE `imp_glpi_operatingsystemkernels` SET name = TRIM(name);
+UPDATE `imp_glpi_items_operatingsystems` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE `imp_glpi_devicefirmwaretypes` SET name = TRIM(name);
+UPDATE `imp_glpi_items_devicefirmwares` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE `imp_glpi_items_disks` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE `imp_glpi_devicememorytypes` SET name = TRIM(name);
+UPDATE `imp_glpi_items_devicememories` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE `imp_glpi_items_deviceprocessors` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE `imp_glpi_items_deviceharddrives` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE `imp_glpi_items_devicenetworkcards` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE `imp_glpi_networkports` SET itemtype = CONCAT(UPPER(LEFT(itemtype, 1)), SUBSTRING(itemtype, 2));
+UPDATE imp_glpi_states SET completename = TRIM(completename), level = 1 WHERE states_id = 0;
+DELIMITER //
+BEGIN NOT ATOMIC
+  IF EXISTS (SELECT 1 FROM glpi_computers c JOIN imp_glpi_computers s
+             ON s.serial = c.serial WHERE c.serial <> '') THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Inventaire déjà importé : ces numéros de série sont déjà dans glpi_computers. Rien n''a été modifié.';
+  END IF;
+END //
+DELIMITER ;
+START TRANSACTION;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_states`);
+INSERT INTO imp_map SELECT 'glpi_states', s.id, MIN(d.id), 0 FROM `imp_glpi_states` s JOIN `glpi_states` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_states', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_states` s LEFT JOIN `glpi_states` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_computertypes`);
+INSERT INTO imp_map SELECT 'glpi_computertypes', s.id, MIN(d.id), 0 FROM `imp_glpi_computertypes` s JOIN `glpi_computertypes` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_computertypes', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_computertypes` s LEFT JOIN `glpi_computertypes` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_computermodels`);
+INSERT INTO imp_map SELECT 'glpi_computermodels', s.id, MIN(d.id), 0 FROM `imp_glpi_computermodels` s JOIN `glpi_computermodels` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_computermodels', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_computermodels` s LEFT JOIN `glpi_computermodels` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_manufacturers`);
+INSERT INTO imp_map SELECT 'glpi_manufacturers', s.id, MIN(d.id), 0 FROM `imp_glpi_manufacturers` s JOIN `glpi_manufacturers` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_manufacturers', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_manufacturers` s LEFT JOIN `glpi_manufacturers` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_operatingsystems`);
+INSERT INTO imp_map SELECT 'glpi_operatingsystems', s.id, MIN(d.id), 0 FROM `imp_glpi_operatingsystems` s JOIN `glpi_operatingsystems` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_operatingsystems', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_operatingsystems` s LEFT JOIN `glpi_operatingsystems` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_operatingsystemkernels`);
+INSERT INTO imp_map SELECT 'glpi_operatingsystemkernels', s.id, MIN(d.id), 0 FROM `imp_glpi_operatingsystemkernels` s JOIN `glpi_operatingsystemkernels` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_operatingsystemkernels', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_operatingsystemkernels` s LEFT JOIN `glpi_operatingsystemkernels` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_operatingsystemkernelversions`);
+INSERT INTO imp_map SELECT 'glpi_operatingsystemkernelversions', s.id, @base + s.id, 1 FROM `imp_glpi_operatingsystemkernelversions` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_computers`);
+INSERT INTO imp_map SELECT 'glpi_computers', s.id, @base + s.id, 1 FROM `imp_glpi_computers` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_items_operatingsystems`);
+INSERT INTO imp_map SELECT 'glpi_items_operatingsystems', s.id, @base + s.id, 1 FROM `imp_glpi_items_operatingsystems` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_devicefirmwaretypes`);
+INSERT INTO imp_map SELECT 'glpi_devicefirmwaretypes', s.id, MIN(d.id), 0 FROM `imp_glpi_devicefirmwaretypes` s JOIN `glpi_devicefirmwaretypes` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_devicefirmwaretypes', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_devicefirmwaretypes` s LEFT JOIN `glpi_devicefirmwaretypes` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_devicefirmwares`);
+INSERT INTO imp_map SELECT 'glpi_devicefirmwares', s.id, @base + s.id, 1 FROM `imp_glpi_devicefirmwares` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_items_devicefirmwares`);
+INSERT INTO imp_map SELECT 'glpi_items_devicefirmwares', s.id, @base + s.id, 1 FROM `imp_glpi_items_devicefirmwares` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_items_disks`);
+INSERT INTO imp_map SELECT 'glpi_items_disks', s.id, @base + s.id, 1 FROM `imp_glpi_items_disks` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_devicememorytypes`);
+INSERT INTO imp_map SELECT 'glpi_devicememorytypes', s.id, MIN(d.id), 0 FROM `imp_glpi_devicememorytypes` s JOIN `glpi_devicememorytypes` d ON d.name = s.name GROUP BY s.id;
+INSERT INTO imp_map SELECT 'glpi_devicememorytypes', s.id, @base + ROW_NUMBER() OVER (ORDER BY s.id), 1 FROM `imp_glpi_devicememorytypes` s LEFT JOIN `glpi_devicememorytypes` d ON d.name = s.name WHERE d.id IS NULL;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_devicememories`);
+INSERT INTO imp_map SELECT 'glpi_devicememories', s.id, @base + s.id, 1 FROM `imp_glpi_devicememories` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_items_devicememories`);
+INSERT INTO imp_map SELECT 'glpi_items_devicememories', s.id, @base + s.id, 1 FROM `imp_glpi_items_devicememories` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_deviceprocessors`);
+INSERT INTO imp_map SELECT 'glpi_deviceprocessors', s.id, @base + s.id, 1 FROM `imp_glpi_deviceprocessors` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_items_deviceprocessors`);
+INSERT INTO imp_map SELECT 'glpi_items_deviceprocessors', s.id, @base + s.id, 1 FROM `imp_glpi_items_deviceprocessors` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_deviceharddrives`);
+INSERT INTO imp_map SELECT 'glpi_deviceharddrives', s.id, @base + s.id, 1 FROM `imp_glpi_deviceharddrives` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_items_deviceharddrives`);
+INSERT INTO imp_map SELECT 'glpi_items_deviceharddrives', s.id, @base + s.id, 1 FROM `imp_glpi_items_deviceharddrives` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_devicenetworkcards`);
+INSERT INTO imp_map SELECT 'glpi_devicenetworkcards', s.id, @base + s.id, 1 FROM `imp_glpi_devicenetworkcards` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_items_devicenetworkcards`);
+INSERT INTO imp_map SELECT 'glpi_items_devicenetworkcards', s.id, @base + s.id, 1 FROM `imp_glpi_items_devicenetworkcards` s;
+SET @base = (SELECT COALESCE(MAX(id), 0) FROM `glpi_networkports`);
+INSERT INTO imp_map SELECT 'glpi_networkports', s.id, @base + s.id, 1 FROM `imp_glpi_networkports` s;
+UPDATE `imp_glpi_computers` SET computermodels_id = computermodels_id + 1000000000 WHERE computermodels_id > 0 ORDER BY computermodels_id DESC;
+UPDATE `imp_glpi_computers` s JOIN imp_map m ON m.tbl = 'glpi_computermodels' AND m.old_id + 1000000000 = s.computermodels_id
+  SET s.computermodels_id = m.new_id WHERE s.computermodels_id >= 1000000000;
+UPDATE `imp_glpi_computers` SET computermodels_id = 0 WHERE computermodels_id >= 1000000000;
+UPDATE `imp_glpi_computers` SET computertypes_id = computertypes_id + 1000000000 WHERE computertypes_id > 0 ORDER BY computertypes_id DESC;
+UPDATE `imp_glpi_computers` s JOIN imp_map m ON m.tbl = 'glpi_computertypes' AND m.old_id + 1000000000 = s.computertypes_id
+  SET s.computertypes_id = m.new_id WHERE s.computertypes_id >= 1000000000;
+UPDATE `imp_glpi_computers` SET computertypes_id = 0 WHERE computertypes_id >= 1000000000;
+UPDATE `imp_glpi_computers` SET manufacturers_id = manufacturers_id + 1000000000 WHERE manufacturers_id > 0 ORDER BY manufacturers_id DESC;
+UPDATE `imp_glpi_computers` s JOIN imp_map m ON m.tbl = 'glpi_manufacturers' AND m.old_id + 1000000000 = s.manufacturers_id
+  SET s.manufacturers_id = m.new_id WHERE s.manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_computers` SET manufacturers_id = 0 WHERE manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_computers` SET states_id = states_id + 1000000000 WHERE states_id > 0 ORDER BY states_id DESC;
+UPDATE `imp_glpi_computers` s JOIN imp_map m ON m.tbl = 'glpi_states' AND m.old_id + 1000000000 = s.states_id
+  SET s.states_id = m.new_id WHERE s.states_id >= 1000000000;
+UPDATE `imp_glpi_computers` SET states_id = 0 WHERE states_id >= 1000000000;
+UPDATE `imp_glpi_operatingsystemkernelversions` SET operatingsystemkernels_id = operatingsystemkernels_id + 1000000000 WHERE operatingsystemkernels_id > 0 ORDER BY operatingsystemkernels_id DESC;
+UPDATE `imp_glpi_operatingsystemkernelversions` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystemkernels' AND m.old_id + 1000000000 = s.operatingsystemkernels_id
+  SET s.operatingsystemkernels_id = m.new_id WHERE s.operatingsystemkernels_id >= 1000000000;
+UPDATE `imp_glpi_operatingsystemkernelversions` SET operatingsystemkernels_id = 0 WHERE operatingsystemkernels_id >= 1000000000;
+UPDATE `imp_glpi_items_operatingsystems` SET operatingsystems_id = operatingsystems_id + 1000000000 WHERE operatingsystems_id > 0 ORDER BY operatingsystems_id DESC;
+UPDATE `imp_glpi_items_operatingsystems` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystems' AND m.old_id + 1000000000 = s.operatingsystems_id
+  SET s.operatingsystems_id = m.new_id WHERE s.operatingsystems_id >= 1000000000;
+UPDATE `imp_glpi_items_operatingsystems` SET operatingsystems_id = 0 WHERE operatingsystems_id >= 1000000000;
+UPDATE `imp_glpi_items_operatingsystems` SET operatingsystemkernelversions_id = operatingsystemkernelversions_id + 1000000000 WHERE operatingsystemkernelversions_id > 0 ORDER BY operatingsystemkernelversions_id DESC;
+UPDATE `imp_glpi_items_operatingsystems` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystemkernelversions' AND m.old_id + 1000000000 = s.operatingsystemkernelversions_id
+  SET s.operatingsystemkernelversions_id = m.new_id WHERE s.operatingsystemkernelversions_id >= 1000000000;
+UPDATE `imp_glpi_items_operatingsystems` SET operatingsystemkernelversions_id = 0 WHERE operatingsystemkernelversions_id >= 1000000000;
+UPDATE `imp_glpi_devicefirmwares` SET manufacturers_id = manufacturers_id + 1000000000 WHERE manufacturers_id > 0 ORDER BY manufacturers_id DESC;
+UPDATE `imp_glpi_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_manufacturers' AND m.old_id + 1000000000 = s.manufacturers_id
+  SET s.manufacturers_id = m.new_id WHERE s.manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_devicefirmwares` SET manufacturers_id = 0 WHERE manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_devicefirmwares` SET devicefirmwaretypes_id = devicefirmwaretypes_id + 1000000000 WHERE devicefirmwaretypes_id > 0 ORDER BY devicefirmwaretypes_id DESC;
+UPDATE `imp_glpi_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_devicefirmwaretypes' AND m.old_id + 1000000000 = s.devicefirmwaretypes_id
+  SET s.devicefirmwaretypes_id = m.new_id WHERE s.devicefirmwaretypes_id >= 1000000000;
+UPDATE `imp_glpi_devicefirmwares` SET devicefirmwaretypes_id = 0 WHERE devicefirmwaretypes_id >= 1000000000;
+UPDATE `imp_glpi_items_devicefirmwares` SET devicefirmwares_id = devicefirmwares_id + 1000000000 WHERE devicefirmwares_id > 0 ORDER BY devicefirmwares_id DESC;
+UPDATE `imp_glpi_items_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_devicefirmwares' AND m.old_id + 1000000000 = s.devicefirmwares_id
+  SET s.devicefirmwares_id = m.new_id WHERE s.devicefirmwares_id >= 1000000000;
+UPDATE `imp_glpi_items_devicefirmwares` SET devicefirmwares_id = 0 WHERE devicefirmwares_id >= 1000000000;
+UPDATE `imp_glpi_devicememories` SET devicememorytypes_id = devicememorytypes_id + 1000000000 WHERE devicememorytypes_id > 0 ORDER BY devicememorytypes_id DESC;
+UPDATE `imp_glpi_devicememories` s JOIN imp_map m ON m.tbl = 'glpi_devicememorytypes' AND m.old_id + 1000000000 = s.devicememorytypes_id
+  SET s.devicememorytypes_id = m.new_id WHERE s.devicememorytypes_id >= 1000000000;
+UPDATE `imp_glpi_devicememories` SET devicememorytypes_id = 0 WHERE devicememorytypes_id >= 1000000000;
+UPDATE `imp_glpi_items_devicememories` SET devicememories_id = devicememories_id + 1000000000 WHERE devicememories_id > 0 ORDER BY devicememories_id DESC;
+UPDATE `imp_glpi_items_devicememories` s JOIN imp_map m ON m.tbl = 'glpi_devicememories' AND m.old_id + 1000000000 = s.devicememories_id
+  SET s.devicememories_id = m.new_id WHERE s.devicememories_id >= 1000000000;
+UPDATE `imp_glpi_items_devicememories` SET devicememories_id = 0 WHERE devicememories_id >= 1000000000;
+UPDATE `imp_glpi_deviceprocessors` SET manufacturers_id = manufacturers_id + 1000000000 WHERE manufacturers_id > 0 ORDER BY manufacturers_id DESC;
+UPDATE `imp_glpi_deviceprocessors` s JOIN imp_map m ON m.tbl = 'glpi_manufacturers' AND m.old_id + 1000000000 = s.manufacturers_id
+  SET s.manufacturers_id = m.new_id WHERE s.manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_deviceprocessors` SET manufacturers_id = 0 WHERE manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_items_deviceprocessors` SET deviceprocessors_id = deviceprocessors_id + 1000000000 WHERE deviceprocessors_id > 0 ORDER BY deviceprocessors_id DESC;
+UPDATE `imp_glpi_items_deviceprocessors` s JOIN imp_map m ON m.tbl = 'glpi_deviceprocessors' AND m.old_id + 1000000000 = s.deviceprocessors_id
+  SET s.deviceprocessors_id = m.new_id WHERE s.deviceprocessors_id >= 1000000000;
+UPDATE `imp_glpi_items_deviceprocessors` SET deviceprocessors_id = 0 WHERE deviceprocessors_id >= 1000000000;
+UPDATE `imp_glpi_deviceharddrives` SET manufacturers_id = manufacturers_id + 1000000000 WHERE manufacturers_id > 0 ORDER BY manufacturers_id DESC;
+UPDATE `imp_glpi_deviceharddrives` s JOIN imp_map m ON m.tbl = 'glpi_manufacturers' AND m.old_id + 1000000000 = s.manufacturers_id
+  SET s.manufacturers_id = m.new_id WHERE s.manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_deviceharddrives` SET manufacturers_id = 0 WHERE manufacturers_id >= 1000000000;
+UPDATE `imp_glpi_items_deviceharddrives` SET deviceharddrives_id = deviceharddrives_id + 1000000000 WHERE deviceharddrives_id > 0 ORDER BY deviceharddrives_id DESC;
+UPDATE `imp_glpi_items_deviceharddrives` s JOIN imp_map m ON m.tbl = 'glpi_deviceharddrives' AND m.old_id + 1000000000 = s.deviceharddrives_id
+  SET s.deviceharddrives_id = m.new_id WHERE s.deviceharddrives_id >= 1000000000;
+UPDATE `imp_glpi_items_deviceharddrives` SET deviceharddrives_id = 0 WHERE deviceharddrives_id >= 1000000000;
+UPDATE `imp_glpi_items_devicenetworkcards` SET devicenetworkcards_id = devicenetworkcards_id + 1000000000 WHERE devicenetworkcards_id > 0 ORDER BY devicenetworkcards_id DESC;
+UPDATE `imp_glpi_items_devicenetworkcards` s JOIN imp_map m ON m.tbl = 'glpi_devicenetworkcards' AND m.old_id + 1000000000 = s.devicenetworkcards_id
+  SET s.devicenetworkcards_id = m.new_id WHERE s.devicenetworkcards_id >= 1000000000;
+UPDATE `imp_glpi_items_devicenetworkcards` SET devicenetworkcards_id = 0 WHERE devicenetworkcards_id >= 1000000000;
+UPDATE `imp_glpi_items_operatingsystems` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_items_operatingsystems` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_items_operatingsystems` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_items_devicefirmwares` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_items_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_items_devicefirmwares` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_items_disks` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_items_disks` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_items_disks` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_items_devicememories` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_items_devicememories` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_items_devicememories` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_items_deviceprocessors` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_items_deviceprocessors` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_items_deviceprocessors` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_items_deviceharddrives` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_items_deviceharddrives` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_items_deviceharddrives` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_items_devicenetworkcards` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_items_devicenetworkcards` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_items_devicenetworkcards` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_networkports` SET items_id = items_id + 1000000000 WHERE items_id > 0 AND itemtype = 'Computer' ORDER BY items_id DESC;
+UPDATE `imp_glpi_networkports` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.items_id
+  SET s.items_id = m.new_id WHERE s.items_id >= 1000000000 AND s.itemtype = 'Computer';
+UPDATE `imp_glpi_networkports` SET items_id = 0 WHERE items_id >= 1000000000 AND itemtype = 'Computer';
+UPDATE `imp_glpi_states` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_states` s JOIN imp_map m ON m.tbl = 'glpi_states' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_states` SELECT s.* FROM `imp_glpi_states` s JOIN imp_map m ON m.tbl = 'glpi_states' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_computertypes` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_computertypes` s JOIN imp_map m ON m.tbl = 'glpi_computertypes' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_computertypes` SELECT s.* FROM `imp_glpi_computertypes` s JOIN imp_map m ON m.tbl = 'glpi_computertypes' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_computermodels` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_computermodels` s JOIN imp_map m ON m.tbl = 'glpi_computermodels' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_computermodels` SELECT s.* FROM `imp_glpi_computermodels` s JOIN imp_map m ON m.tbl = 'glpi_computermodels' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_manufacturers` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_manufacturers` s JOIN imp_map m ON m.tbl = 'glpi_manufacturers' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_manufacturers` SELECT s.* FROM `imp_glpi_manufacturers` s JOIN imp_map m ON m.tbl = 'glpi_manufacturers' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_operatingsystems` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_operatingsystems` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystems' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_operatingsystems` SELECT s.* FROM `imp_glpi_operatingsystems` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystems' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_operatingsystemkernels` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_operatingsystemkernels` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystemkernels' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_operatingsystemkernels` SELECT s.* FROM `imp_glpi_operatingsystemkernels` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystemkernels' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_operatingsystemkernelversions` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_operatingsystemkernelversions` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystemkernelversions' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_operatingsystemkernelversions` SELECT s.* FROM `imp_glpi_operatingsystemkernelversions` s JOIN imp_map m ON m.tbl = 'glpi_operatingsystemkernelversions' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_computers` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_computers` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_computers` SELECT s.* FROM `imp_glpi_computers` s JOIN imp_map m ON m.tbl = 'glpi_computers' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_items_operatingsystems` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_items_operatingsystems` s JOIN imp_map m ON m.tbl = 'glpi_items_operatingsystems' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_items_operatingsystems` SELECT s.* FROM `imp_glpi_items_operatingsystems` s JOIN imp_map m ON m.tbl = 'glpi_items_operatingsystems' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_devicefirmwaretypes` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_devicefirmwaretypes` s JOIN imp_map m ON m.tbl = 'glpi_devicefirmwaretypes' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_devicefirmwaretypes` SELECT s.* FROM `imp_glpi_devicefirmwaretypes` s JOIN imp_map m ON m.tbl = 'glpi_devicefirmwaretypes' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_devicefirmwares` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_devicefirmwares' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_devicefirmwares` SELECT s.* FROM `imp_glpi_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_devicefirmwares' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_items_devicefirmwares` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_items_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_items_devicefirmwares' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_items_devicefirmwares` SELECT s.* FROM `imp_glpi_items_devicefirmwares` s JOIN imp_map m ON m.tbl = 'glpi_items_devicefirmwares' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_items_disks` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_items_disks` s JOIN imp_map m ON m.tbl = 'glpi_items_disks' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_items_disks` SELECT s.* FROM `imp_glpi_items_disks` s JOIN imp_map m ON m.tbl = 'glpi_items_disks' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_devicememorytypes` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_devicememorytypes` s JOIN imp_map m ON m.tbl = 'glpi_devicememorytypes' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_devicememorytypes` SELECT s.* FROM `imp_glpi_devicememorytypes` s JOIN imp_map m ON m.tbl = 'glpi_devicememorytypes' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_devicememories` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_devicememories` s JOIN imp_map m ON m.tbl = 'glpi_devicememories' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_devicememories` SELECT s.* FROM `imp_glpi_devicememories` s JOIN imp_map m ON m.tbl = 'glpi_devicememories' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_items_devicememories` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_items_devicememories` s JOIN imp_map m ON m.tbl = 'glpi_items_devicememories' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_items_devicememories` SELECT s.* FROM `imp_glpi_items_devicememories` s JOIN imp_map m ON m.tbl = 'glpi_items_devicememories' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_deviceprocessors` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_deviceprocessors` s JOIN imp_map m ON m.tbl = 'glpi_deviceprocessors' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_deviceprocessors` SELECT s.* FROM `imp_glpi_deviceprocessors` s JOIN imp_map m ON m.tbl = 'glpi_deviceprocessors' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_items_deviceprocessors` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_items_deviceprocessors` s JOIN imp_map m ON m.tbl = 'glpi_items_deviceprocessors' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_items_deviceprocessors` SELECT s.* FROM `imp_glpi_items_deviceprocessors` s JOIN imp_map m ON m.tbl = 'glpi_items_deviceprocessors' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_deviceharddrives` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_deviceharddrives` s JOIN imp_map m ON m.tbl = 'glpi_deviceharddrives' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_deviceharddrives` SELECT s.* FROM `imp_glpi_deviceharddrives` s JOIN imp_map m ON m.tbl = 'glpi_deviceharddrives' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_items_deviceharddrives` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_items_deviceharddrives` s JOIN imp_map m ON m.tbl = 'glpi_items_deviceharddrives' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_items_deviceharddrives` SELECT s.* FROM `imp_glpi_items_deviceharddrives` s JOIN imp_map m ON m.tbl = 'glpi_items_deviceharddrives' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_devicenetworkcards` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_devicenetworkcards` s JOIN imp_map m ON m.tbl = 'glpi_devicenetworkcards' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_devicenetworkcards` SELECT s.* FROM `imp_glpi_devicenetworkcards` s JOIN imp_map m ON m.tbl = 'glpi_devicenetworkcards' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_items_devicenetworkcards` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_items_devicenetworkcards` s JOIN imp_map m ON m.tbl = 'glpi_items_devicenetworkcards' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_items_devicenetworkcards` SELECT s.* FROM `imp_glpi_items_devicenetworkcards` s JOIN imp_map m ON m.tbl = 'glpi_items_devicenetworkcards' AND m.new_id = s.id AND m.is_new = 1;
+UPDATE `imp_glpi_networkports` SET id = id + 1000000000 ORDER BY id DESC;
+UPDATE `imp_glpi_networkports` s JOIN imp_map m ON m.tbl = 'glpi_networkports' AND m.old_id + 1000000000 = s.id SET s.id = m.new_id;
+INSERT INTO `glpi_networkports` SELECT s.* FROM `imp_glpi_networkports` s JOIN imp_map m ON m.tbl = 'glpi_networkports' AND m.new_id = s.id AND m.is_new = 1;
+INSERT INTO glpi_dropdownvisibilities (itemtype, items_id, visible_itemtype, is_visible)
+  SELECT 'State', m.new_id, v.t, 1 FROM imp_map m JOIN (
+    SELECT 'Computer' AS t
+    UNION ALL SELECT 'Monitor'
+    UNION ALL SELECT 'NetworkEquipment'
+    UNION ALL SELECT 'Peripheral'
+    UNION ALL SELECT 'Phone'
+    UNION ALL SELECT 'Printer'
+    UNION ALL SELECT 'SoftwareLicense'
+    UNION ALL SELECT 'Certificate'
+    UNION ALL SELECT 'Enclosure'
+    UNION ALL SELECT 'PDU'
+    UNION ALL SELECT 'Line'
+    UNION ALL SELECT 'Rack'
+    UNION ALL SELECT 'SoftwareVersion'
+    UNION ALL SELECT 'Cluster'
+    UNION ALL SELECT 'Contract'
+    UNION ALL SELECT 'Appliance'
+    UNION ALL SELECT 'DatabaseInstance'
+    UNION ALL SELECT 'Cable'
+    UNION ALL SELECT 'Unmanaged'
+    UNION ALL SELECT 'PassiveDCEquipment'
+  ) v WHERE m.tbl = 'glpi_states' AND m.is_new = 1;
+COMMIT;
+SELECT tbl AS 'table', SUM(is_new) AS ajoutees, SUM(1 - is_new) AS reprises FROM imp_map GROUP BY tbl;
